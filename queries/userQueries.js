@@ -1,20 +1,3 @@
-// const prisma = require("../prismaconfig");
-
-// exports.createUser = async (data) => {
-//   const { name, email, password } = data;
-//   try {
-//     const result = await prisma.$queryRaw`
-//       INSERT INTO "User" (name, email, password)
-//       VALUES (${name}, ${email}, ${password})
-//       RETURNING *;
-//     `;
-//     console.log("result",result);
-//     return result;
-//   } catch (error) {
-//     console.log("error", error);
-//     return null;
-//   }
-// };
 const prisma = require("../prismaconfig");
 
 exports.createUser = async (data) => {
