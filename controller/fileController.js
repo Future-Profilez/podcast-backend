@@ -1,22 +1,83 @@
 const { errorResponse, successResponse, validationErrorResponse } = require("../utils/ErrorHandling");
 const { v4: uuidv4 } = require('uuid');
 const catchAsync = require("../utils/catchAsync");
-const { createFile, getFile, getAllFiles } = require("../queries/fileQueries");
+const { getFile, getAllFiles, getAllPodcasts } = require("../queries/fileQueries");
+const { uploadFileToSpaces } = require("../utils/FileUploader");
+const prisma = require("../prismaconfig");
+
+exports.AddPodcast = catchAsync(async (req, res) => {
+  try {
+    const { name, Author, Cast } = req.body;
+
+    if (!name) {
+      return errorResponse(res, "Name is required", 401);
+    }
+
+    if (!req.file) {
+      return errorResponse(res, "Thumbnail is required", 401);
+    }
+
+    const thumbnailKey = await uploadFileToSpaces(req.file);
+    const podcastData = {
+      uuid: uuidv4(),
+      name,
+      thumbnail: thumbnailKey,
+    };
+    if (Author) podcastData.Author = Author;
+    if (Cast) {
+      try {
+        const castArray = typeof Cast === "string" ? JSON.parse(Cast) : Cast;
+        if (!Array.isArray(castArray)) {
+          return errorResponse(res, "Cast must be an array of strings", 400);
+        }
+        podcastData.Cast = castArray;
+      } catch {
+        return errorResponse(res, "Invalid Cast format. Must be a JSON array.", 400);
+      }
+    }
+    const newPodcast = await prisma.podcast.create({ data: podcastData });
+    return successResponse(res, "Podcast created successfully!", 201, newPodcast);
+  } catch (error) {
+    console.error("Error in AddPodcast:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.GetAllPodcasts = catchAsync(async (req, res) => {
+  try {
+    const data = await getAllPodcasts();
+    if (!data) {
+      return errorResponse(res, "Podcasts not found", 404);
+    }
+    successResponse(res, "Podcasts Retrieved successfully", 200, data);
+  } catch (error) {
+    console.log("Podcast get error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
 
 exports.AddFile = catchAsync(async (req, res) => {
   try {
-    const { name } = req.body;
-    if ( !name ) {
-      return errorResponse(res, "All fields are required", 401);
+    const { title, duration, size, podcastId } = req.body;
+    if (!title || !duration || !podcastId) {
+      return errorResponse(res, "Title, duration, and podcastId are required", 401);
     }
-    req.body.uuid=uuidv4();
-    const data = await createFile(req.body);
-    if (!data || !data.length) {
-    return errorResponse(res, "Unable to create file", 500);
+    if (!req.file) {
+      return errorResponse(res, "Audio file is required", 401);
     }
-    successResponse(res, "Teacher created successfully!", 201, data[0]);
+    const link = await uploadFileToSpaces(req.file);
+    const fileData = {
+      uuid: uuidv4(),
+      title,
+      duration: Number(duration),
+      size: size ? Number(size) : null,
+      link,
+      podcastId: Number(podcastId),
+    };
+    const newFile = await prisma.files.create({data: fileData});
+    return successResponse(res, "File uploaded successfully", 201, newFile);
   } catch (error) {
-    console.log("error in add files", error);
+    console.error("Error in AddFile:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });

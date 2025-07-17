@@ -1,13 +1,11 @@
 const prisma = require("../prismaconfig");
 
-exports.createFile = async (data) => {
-  const { name, size, uuid, link } = data;
+exports.getAllPodcasts = async () => {
   const result = await prisma.$queryRaw`
-    INSERT INTO "Files" (name, size, uuid, link)
-    VALUES (${name}, ${size}, ${uuid}, ${link})
-    RETURNING *;
+    SELECT * FROM "Podcast";
   `;
-  return result;
+  console.log("result", result);
+  return result[0];
 };
 
 exports.getAllFiles = async () => {

@@ -14,10 +14,25 @@ model User {
   password String
 }
 
+model Podcast {
+  id         Int      @id @default(autoincrement())
+  uuid       String   @unique // You will generate this manually using uuidv4
+  thumbnail  String
+  name       String
+  createdAt  DateTime @default(now()) // Use timestamp for creation time
+  Author     String?              // Optional
+  Cast       String[]             // Array of strings
+  files Files[] // ← Virtual relation; Prisma resolves this using Files.podcastId
+}
+
 model Files {
-  id    Int    @id @default(autoincrement())
-  uuid  String @unique // You will generate this manually using uuidv4
-  name  String
-  size  Int?   // Optional (nullable in DB)
-  link  String? // Optional (nullable in DB)
+  id        Int    @id @default(autoincrement())
+  uuid      String @unique
+  title     String
+  duration  Int
+  link     String? // Optional (nullable in DB)
+  size      Int?   // Optional (nullable in DB)
+  createdAt  DateTime @default(now()) // Use timestamp for creation time
+  podcastId  Int
+  podcast    Podcast  @relation(fields: [podcastId], references: [id])
 }
