@@ -1,9 +1,10 @@
 const { errorResponse, successResponse, validationErrorResponse } = require("../utils/ErrorHandling");
 const { v4: uuidv4 } = require('uuid');
 const catchAsync = require("../utils/catchAsync");
-const { getFile, getAllFiles, getAllPodcasts } = require("../queries/fileQueries");
+const { getFile, getAllFiles, getAllPodcasts, getAllPodcastswithFiles, getPodcastDetail } = require("../queries/fileQueries");
 const { uploadFileToSpaces } = require("../utils/FileUploader");
 const prisma = require("../prismaconfig");
+const { error } = require("winston");
 
 exports.AddPodcast = catchAsync(async (req, res) => {
   try {
@@ -47,6 +48,36 @@ exports.GetAllPodcasts = catchAsync(async (req, res) => {
   try {
     const data = await getAllPodcasts();
     console.log("data" ,data)
+    if (!data) {
+      return errorResponse(res, "Podcasts not found", 404);
+    }
+    successResponse(res, "Podcasts Retrieved successfully", 200, data);
+  } catch (error) {
+    console.log("Podcast get error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.GetAllPodcastswithFiles = catchAsync(async (req, res) => {
+  try {
+    const data = await getAllPodcastswithFiles();
+    if (!data) {
+      return errorResponse(res, "Podcasts not found", 404);
+    }
+    successResponse(res, "Podcasts Retrieved successfully", 200, data);
+  } catch (error) {
+    console.log("Podcast get error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.PodcastsDetail = catchAsync(async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    if(!uuid){
+      return errorResponse(res, "UUID is required", 400);
+    }
+    const data = await getPodcastDetail(uuid);
     if (!data) {
       return errorResponse(res, "Podcasts not found", 404);
     }

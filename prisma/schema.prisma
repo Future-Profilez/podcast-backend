@@ -27,13 +27,14 @@ model Podcast {
 }
 
 model Files {
-  id        Int    @id @default(autoincrement())
-  uuid      String @unique
-  title     String
-  duration  Int
-  link     String? // Optional (nullable in DB)
-  size      Int?   // Optional (nullable in DB)
-  createdAt  DateTime @default(now()) // Use timestamp for creation time
-  podcastId  Int
-  podcast    Podcast  @relation(fields: [podcastId], references: [id])
+  id           Int    @id @default(autoincrement())
+  uuid         String @unique
+  title        String
+  description  String
+  duration     Int
+  link         String? // Optional (nullable in DB)
+  size         Int?   // Optional (nullable in DB)
+  createdAt    DateTime @default(now()) // Use timestamp for creation time
+  podcastId    Int
+  podcast      Podcast  @relation(fields: [podcastId], references: [id])
 }
