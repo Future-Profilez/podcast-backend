@@ -5,7 +5,7 @@ exports.getAllPodcasts = async () => {
     SELECT * FROM "Podcast";
   `;
   console.log("result", result);
-  return result[0];
+  return result;
 };
 
 exports.getAllFiles = async () => {

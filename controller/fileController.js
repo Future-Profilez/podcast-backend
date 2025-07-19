@@ -46,6 +46,7 @@ exports.AddPodcast = catchAsync(async (req, res) => {
 exports.GetAllPodcasts = catchAsync(async (req, res) => {
   try {
     const data = await getAllPodcasts();
+    console.log("data" ,data)
     if (!data) {
       return errorResponse(res, "Podcasts not found", 404);
     }

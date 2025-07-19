@@ -19,6 +19,7 @@ model Podcast {
   uuid       String   @unique // You will generate this manually using uuidv4
   thumbnail  String
   name       String
+  content    String
   createdAt  DateTime @default(now()) // Use timestamp for creation time
   Author     String?              // Optional
   Cast       String[]             // Array of strings
