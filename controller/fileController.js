@@ -1,7 +1,7 @@
 const { errorResponse, successResponse, validationErrorResponse } = require("../utils/ErrorHandling");
 const { v4: uuidv4 } = require('uuid');
 const catchAsync = require("../utils/catchAsync");
-const { getFile, getAllFiles, getAllPodcasts, getAllPodcastswithFiles, getPodcastDetail } = require("../queries/fileQueries");
+const { getFile, getAllFiles, getAllPodcasts, getAllPodcastswithFiles, getPodcastDetail, updatefiles, deletefiles } = require("../queries/fileQueries");
 const { uploadFileToSpaces } = require("../utils/FileUploader");
 const prisma = require("../prismaconfig");
 const { error } = require("winston");
@@ -47,7 +47,7 @@ exports.AddPodcast = catchAsync(async (req, res) => {
 exports.GetAllPodcasts = catchAsync(async (req, res) => {
   try {
     const data = await getAllPodcasts();
-    console.log("data" ,data)
+    console.log("data", data)
     if (!data) {
       return errorResponse(res, "Podcasts not found", 404);
     }
@@ -74,7 +74,7 @@ exports.GetAllPodcastswithFiles = catchAsync(async (req, res) => {
 exports.PodcastsDetail = catchAsync(async (req, res) => {
   try {
     const { uuid } = req.params;
-    if(!uuid){
+    if (!uuid) {
       return errorResponse(res, "UUID is required", 400);
     }
     const data = await getPodcastDetail(uuid);
@@ -106,7 +106,7 @@ exports.AddFile = catchAsync(async (req, res) => {
       link,
       podcastId: Number(podcastId),
     };
-    const newFile = await prisma.files.create({data: fileData});
+    const newFile = await prisma.files.create({ data: fileData });
     return successResponse(res, "File uploaded successfully", 201, newFile);
   } catch (error) {
     console.error("Error in AddFile:", error);
@@ -129,12 +129,42 @@ exports.GetAllFiles = catchAsync(async (req, res) => {
 
 exports.GetFile = catchAsync(async (req, res) => {
   try {
-    const {id}= req.params;
+    const { id } = req.params;
     const data = await getFile(id);
     if (!data) {
       return errorResponse(res, "File not found", 404);
     }
     successResponse(res, "File Retrieved successfully", 200, data);
+  } catch (error) {
+    console.log("All files get error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+
+exports.UpdateFiles = catchAsync(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await updatefiles(id);
+    if (!data) {
+      return errorResponse(res, "File not found", 404);
+    }
+    successResponse(res, "File update successfully", 200, data);
+  } catch (error) {
+    console.log("All files get error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+
+exports.DeleteFiles = catchAsync(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await deletefiles(id);
+    if (!data) {
+      return errorResponse(res, "File not found", 404);
+    }
+    successResponse(res, "File Delete successfully", 200);
   } catch (error) {
     console.log("All files get error:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);

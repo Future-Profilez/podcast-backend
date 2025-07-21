@@ -74,3 +74,16 @@ exports.getFile = async (uuid) => {
   `;
   return result;
 };
+
+exports.updatefiles = async (uuid) => {
+  const result = await prisma.$queryRaw`
+  UPDATE "Files" SET VALEUS WHERE uuid=${uuid}`;
+  return result;
+}
+
+exports.deletefiles = async (uuid) => {
+  const result = await prisma.$queryRaw`
+  DELETE FROM "FILES" WHERE uuid=${uuid}`;
+  return result;
+}
+
