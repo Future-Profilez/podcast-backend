@@ -24,7 +24,7 @@ exports.signup = catchAsync(async (req, res) => {
     if (!data || !data.length) {
     return errorResponse(res, "Unable to create user", 500);
     }
-    successResponse(res, "Teacher created successfully!", 201, data[0]);
+    successResponse(res, "Account created successfully!", 201, data[0]);
   } catch (error) {
     // Handle Prisma error codes
     if (error.code === "P2010" && error.meta?.code === "23505") {

@@ -1,9 +1,10 @@
 const prisma = require("../prismaconfig");
 
 exports.getAllPodcasts = async () => {
-  const result = await prisma.$queryRaw`
-    SELECT * FROM "Podcast";
-`;
+  //   const result = await prisma.$queryRaw`
+  //     SELECT * FROM "Podcast";
+  // `;
+  const result = await prisma.podcast.findMany();
   return result;
 };
 
@@ -13,20 +14,20 @@ exports.getAllPodcastswithFiles = async () => {
       files: true, // Will include all associated files or empty array if none
     },
     orderBy: {
-      createdAt: 'asc', // Optional: latest first
+      createdAt: "asc", // Optional: latest first
     },
   });
   // const result = await prisma.$queryRaw`
-  //   SELECT 
-  //     p.*, 
+  //   SELECT
+  //     p.*,
   //     COALESCE(json_agg(f.*) FILTER (WHERE f.id IS NOT NULL), '[]') AS files
-  //   FROM 
+  //   FROM
   //     "Podcast" p
-  //   LEFT JOIN 
+  //   LEFT JOIN
   //     "Files" f ON f."podcastId" = p.id
-  //   GROUP BY 
+  //   GROUP BY
   //     p.id
-  //   ORDER BY 
+  //   ORDER BY
   //     p."createdAt" DESC;
   // `;
   return result;
@@ -40,50 +41,60 @@ exports.getPodcastDetail = async (uuid) => {
     include: {
       files: {
         orderBy: {
-          createdAt: 'asc', // Oldest first
+          createdAt: "asc", // Oldest first
         },
       },
     },
   });
   // const result = await prisma.$queryRaw`
-  //   SELECT 
-  //     p.*, 
+  //   SELECT
+  //     p.*,
   //     COALESCE(json_agg(f.*) FILTER (WHERE f.id IS NOT NULL), '[]') AS files
-  //   FROM 
+  //   FROM
   //     "Podcast" p
-  //   LEFT JOIN 
+  //   LEFT JOIN
   //     "Files" f ON p.id = f."podcastId"
-  //   WHERE 
+  //   WHERE
   //     p.uuid = ${uuid}
-  //   GROUP BY 
+  //   GROUP BY
   //     p.id;
   // `;
   return result;
 };
 
 exports.getAllFiles = async () => {
-  const result = await prisma.$queryRaw`
-    SELECT * FROM "Files";
-`;
+//   const result = await prisma.$queryRaw`
+//     SELECT * FROM "Files";
+// `;
+const result = await prisma.files.findMany();
   return result;
 };
 
 exports.getFile = async (uuid) => {
-  const result = await prisma.$queryRaw`
-    SELECT * FROM "Files" WHERE uuid=${uuid};
-  `;
+  // const result = await prisma.$queryRaw`
+  //   SELECT * FROM "Files" WHERE uuid=${uuid};
+  // `;
+  const result = await prisma.files.findUnique({
+    where: { uuid },
+  });
   return result;
 };
 
-exports.updatefiles = async (uuid) => {
-  const result = await prisma.$queryRaw`
-  UPDATE "Files" SET VALEUS WHERE uuid=${uuid}`;
+exports.updatefiles = async (uuid, data) => {
+  // const result = await prisma.$queryRaw`
+  // UPDATE "Files" SET VALEUS WHERE uuid=${uuid}`;
+  const result = await prisma.files.update({
+    where: { uuid },
+    data,
+  });
   return result;
-}
+};
 
 exports.deletefiles = async (uuid) => {
-  const result = await prisma.$queryRaw`
-  DELETE FROM "FILES" WHERE uuid=${uuid}`;
+  // const result = await prisma.$queryRaw`
+  // DELETE FROM "FILES" WHERE uuid=${uuid}`;
+  const result = await prisma.files.delete({
+    where: { uuid },
+  });
   return result;
-}
-
+};
