@@ -62,24 +62,6 @@ exports.getPodcastDetail = async (uuid) => {
   return result;
 };
 
-exports.getAllFiles = async () => {
-//   const result = await prisma.$queryRaw`
-//     SELECT * FROM "Files";
-// `;
-const result = await prisma.files.findMany();
-  return result;
-};
-
-exports.getFile = async (uuid) => {
-  // const result = await prisma.$queryRaw`
-  //   SELECT * FROM "Files" WHERE uuid=${uuid};
-  // `;
-  const result = await prisma.files.findUnique({
-    where: { uuid },
-  });
-  return result;
-};
-
 exports.updatefiles = async (uuid, data) => {
   // const result = await prisma.$queryRaw`
   // UPDATE "Files" SET VALEUS WHERE uuid=${uuid}`;
@@ -90,7 +72,7 @@ exports.updatefiles = async (uuid, data) => {
   return result;
 };
 
-exports.deletefiles = async (uuid) => {
+exports.deletefile = async (uuid) => {
   // const result = await prisma.$queryRaw`
   // DELETE FROM "FILES" WHERE uuid=${uuid}`;
   const result = await prisma.files.delete({
