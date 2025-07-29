@@ -2,6 +2,7 @@ const { errorResponse, successResponse, validationErrorResponse } = require("../
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const catchAsync = require("../utils/catchAsync");
+const prisma = require("../prismaconfig");
 const { createUser, getUser } = require("../queries/userQueries");
 
 const signEmail = async (id) => {
@@ -68,6 +69,61 @@ exports.login = catchAsync(async (req, res) => {
     });
   } catch (error) {
     console.log("Login error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.GetUser = catchAsync(async (req, res) => {
+  try {
+    const email = req.user.email;
+
+    if (!email) {
+      Loggers.error("Invalid User");
+      return errorResponse(res, "Invalid User", 401);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      }
+    });
+
+    if (!user) {
+      Loggers.error("Invalid User");
+      return errorResponse(res, "Invalid User", 401);
+    }
+
+    return successResponse(res, "User Get successfully!", 201, {
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.Dashboard = catchAsync(async (req, res) => {
+  try {
+    const podcastCount = await prisma.podcast.count();
+
+    const fileCount = await prisma.files.count();
+
+    const { _avg } = await prisma.files.aggregate({
+      _avg: {
+        duration: true,
+      },
+    });
+
+    return successResponse(res, "Data retrieved successfully!", 200, {
+      podcastCount,
+      fileCount,
+      averageDuration: _avg.duration || 0,
+    });
+  } catch (error) {
+    console.log(error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });

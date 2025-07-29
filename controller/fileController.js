@@ -100,15 +100,16 @@ exports.UpdatePodcast = catchAsync(async (req, res) => {
     if (name) dataToUpdate.name = name;
     if (description) dataToUpdate.description = description;
     if (Author !== undefined) dataToUpdate.Author = Author;
-    if (Cast) {
-      // Cast is expected as a JSON string like '["Person1", "Person2"]'
+    if (Array.isArray(Cast)) {
+      dataToUpdate.Cast = Cast;
+    } else if (typeof Cast === "string") {
       try {
         const parsedCast = JSON.parse(Cast);
         if (Array.isArray(parsedCast)) {
           dataToUpdate.Cast = parsedCast;
         }
       } catch (e) {
-        return errorResponse(res, "Invalid format for Cast. Must be a JSON array.", 400);
+        return errorResponse(res, "Invalid format for Cast. Must be an array or JSON array string.", 400);
       }
     }
 
@@ -122,13 +123,13 @@ exports.UpdatePodcast = catchAsync(async (req, res) => {
     }
 
     // Handle thumbnail update
-    if (req.files?.thumbnail?.[0]) {
+    if (req.file) {
       const isDeleted = await deleteFileFromSpaces(existingPodcast.thumbnail);
       if (!isDeleted) {
         return errorResponse(res, "Unable to delete old thumbnail", 500);
       }
 
-      const newThumbnailKey = await uploadFileToSpaces(req.files.thumbnail[0]);
+      const newThumbnailKey = await uploadFileToSpaces(req.file);
       dataToUpdate.thumbnail = newThumbnailKey;
     }
 
