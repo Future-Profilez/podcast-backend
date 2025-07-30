@@ -5,6 +5,7 @@ require("./prismaconfig");
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const serverless = require('serverless-http');
 
 const corsOptions = {
   origin: "*", // Allowed origins
