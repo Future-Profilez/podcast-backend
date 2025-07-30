@@ -1,8 +1,12 @@
+// prisma.js or prismaconfig.js
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 
-prisma.$connect()
-  .then(() => console.log("✅ Connected to PostgreSQL via Prisma"))
-  .catch((err) => console.error("❌ Prisma connection failed:", err));
+let prisma;
+
+if (!global._prisma) {
+  global._prisma = new PrismaClient();
+}
+
+prisma = global._prisma;
 
 module.exports = prisma;
