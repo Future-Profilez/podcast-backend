@@ -31,7 +31,6 @@ app.get("/", (req, res) => {
     status: 200,
   });
 });
-
 const server = app.listen(PORT, () =>
   console.log("Server is running at port : " + PORT) 
 );
