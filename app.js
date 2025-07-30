@@ -21,7 +21,8 @@ app.use(express.urlencoded({ extended: true, limit: "2000mb" }));
 const PORT = process.env.REACT_APP_SERVER_DOMAIN || 5000;
 
 app.use("/api", require("./route/userRoutes"));
-app.use("/api", require("./route/fileRoutes"));
+app.use("/api", require("./route/userRoutes"));
+app.use("/", require("./route/rssRoutes"));
 
 app.get("/", (req, res) => {
   res.json({
