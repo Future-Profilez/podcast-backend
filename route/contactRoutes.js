@@ -4,6 +4,6 @@ const router = require("express").Router();
 
 router.post("/contact/add", Addcontact);
 
-router.get("/contact", Getcontact)
+router.get("/contact/get", Getcontact)
 
 module.exports = router;

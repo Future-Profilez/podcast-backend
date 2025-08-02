@@ -1,7 +1,7 @@
 const { AddSubscriber, SubscriberGet } = require("../controller/SubscriberController");
-const Router =  require("express").Router();
+const router =  require("express").Router();
 
-Router.post("/subscriber/add" ,  AddSubscriber);
-Router.get("/subscriber/get" ,  SubscriberGet);
+router.post("/subscriber/add" ,  AddSubscriber);
+router.get("/Subscriber/get" ,  SubscriberGet);
 
-module.exports = Router ;
+module.exports = router ;
