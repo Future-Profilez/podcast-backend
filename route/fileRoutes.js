@@ -14,6 +14,7 @@ router.post("/file/add", verifyToken, upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 },
     ]), AddFile);
+    
 router.post("/file/update/:id", verifyToken, upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 },
