@@ -1,4 +1,4 @@
-const { AddFile, AddPodcast, GetAllPodcasts, PodcastsDetail, UploadCheck, UpdateFile, DeleteFile, GetAllPodcastswithFiles, UpdatePodcast, DeletePodcast } = require("../controller/fileController");
+const { AddFile, AddPodcast, GetAllPodcasts, PodcastsDetail, UploadCheck, UpdateFile, DeleteFile, GetAllPodcastswithFiles, UpdatePodcast, DeletePodcast, GetAllFiles, GetFileByUUID } = require("../controller/fileController");
 const router = require("express").Router();
 const { verifyToken } = require("../utils/tokenVerify");
 const { upload } = require("../utils/FileUploader");
@@ -14,6 +14,8 @@ router.post("/file/add", verifyToken, upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 },
     ]), AddFile);
+router.get("/file/getAll", GetAllFiles);
+router.get("/file/get/:id", GetFileByUUID);
     
 router.post("/file/update/:id", verifyToken, upload.fields([
     { name: 'video', maxCount: 1 },
