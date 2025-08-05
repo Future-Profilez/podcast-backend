@@ -230,6 +230,50 @@ exports.AddFile = catchAsync(async (req, res) => {
   }
 });
 
+exports.GetAllFiles = catchAsync(async (req, res) => {
+  try {
+    const data = await prisma.files.findMany({
+    include: {
+      podcast: true, // Include related podcast info if needed
+    },
+    orderBy: {
+      createdAt: 'desc', // Optional: sort newest first
+    },
+  });
+
+    if (!data || data.length === 0) {
+      return errorResponse(res, "Files not found", 404);
+    }
+
+    return successResponse(res, "Files retrieved successfully", 200, data);
+  } catch (error) {
+    console.error("File retrieval error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.GetFileByUUID = catchAsync(async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return errorResponse(res, "UUID is required", 400);
+    }
+    const file = await prisma.files.findUnique({
+      where: { uuid:id },
+      include: {
+        podcast: true, // Include related podcast info if needed
+      },
+    });
+    if (!file) {
+      return errorResponse(res, "File not found", 404);
+    }
+    return successResponse(res, "File retrieved successfully", 200, file);
+  } catch (error) {
+    console.error("Get file error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
 exports.UpdateFile = catchAsync(async (req, res) => {
   try {
     const { id } = req.params;
