@@ -18,28 +18,33 @@ model Podcast {
   id             Int      @id @default(autoincrement())
   uuid           String   @unique // You will generate this manually using uuidv4
   thumbnail      String
-  name           String
+  name           String   @unique
+  email          String
+  langauage      String[]
   description    String
   createdAt      DateTime @default(now()) // Use timestamp for creation time
-  Author         String?              // Optional
-  Cast           String[]             // Array of strings
-  files          Files[] // ← Virtual relation; Prisma resolves this using Files.podcastId
+  author         String   @default("The Property Portfolio Podcast")  // Optional
+  isDeleted      Boolean    @default(false)
+  cast           String[]             // Array of strings
+  episodes       Episode[] // ← Virtual relation; Prisma resolves this using Files.podcastId
 }
 
-model Files {
-  id           Int    @id @default(autoincrement())
-  uuid         String @unique
-  title        String
-  description  String
-  duration     Int
-  link         String? // Optional (nullable in DB)
-  thumbnail    String
-  size         Int?   // Optional (nullable in DB)
-  createdAt    DateTime @default(now()) // Use timestamp for creation time
-  podcastId    Int
-  podcast      Podcast  @relation(fields: [podcastId], references: [id])
+model Episode {
+  id              Int @id @default(autoincrement())
+  uuid            String @unique
+  title           String
+  description     String
+  duration        Int
+  durationInSec   Int
+  link            String? // Optional (nullable in DB)
+  thumbnail       String
+  mimefield       String
+  isDeleted       Boolean    @default(false)
+  size            Int?   // Optional (nullable in DB)
+  createdAt       DateTime @default(now()) // Use timestamp for creation time
+  podcastId       Int
+  podcast         Podcast @relation(fields: [podcastId], references: [id])
 }
-
 
 model subscriber {
   id             Int      @id @default(autoincrement())
