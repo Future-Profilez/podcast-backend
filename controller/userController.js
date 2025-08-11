@@ -109,9 +109,9 @@ exports.Dashboard = catchAsync(async (req, res) => {
   try {
     const podcastCount = await prisma.podcast.count();
 
-    const fileCount = await prisma.files.count();
+    const fileCount = await prisma.episode.count();
 
-    const { _avg } = await prisma.files.aggregate({
+    const { _avg } = await prisma.episode.aggregate({
       _avg: {
         duration: true,
       },

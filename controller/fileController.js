@@ -7,7 +7,7 @@ const { error } = require("winston");
 
 exports.GetAllPodcasts = catchAsync(async (req, res) => {
   try {
-    const data = await prisma.podcast.findMany();
+    const data = await prisma.podcast.findMany({where: { isDeleted : false }});
     // console.log("data", data)
     if (!data) {
       return errorResponse(res, "Podcasts not found", 404);
@@ -22,11 +22,14 @@ exports.GetAllPodcasts = catchAsync(async (req, res) => {
 exports.GetAllPodcastswithFiles = catchAsync(async (req, res) => {
   try {
     const data = await prisma.podcast.findMany({
+      where:{
+        isDeleted: false
+      },
       include: {
-        files: true, // Will include all associated files or empty array if none
+        episodes: true, 
       },
       orderBy: {
-        createdAt: "asc", // Optional: latest first
+        createdAt: "asc",
       },
     });
     if (!data) {
@@ -48,11 +51,12 @@ exports.PodcastsDetail = catchAsync(async (req, res) => {
     const data = await prisma.podcast.findUnique({
     where: {
       uuid: id,
+      isDeleted: false,
     },
     include: {
-      files: {
+      episodes: {
         orderBy: {
-          createdAt: "asc", // Oldest first
+          createdAt: "asc",
         },
       },
     },
@@ -69,7 +73,10 @@ exports.PodcastsDetail = catchAsync(async (req, res) => {
 
 exports.GetAllFiles = catchAsync(async (req, res) => {
   try {
-    const data = await prisma.files.findMany({
+    const data = await prisma.episode.findMany({
+    where: {
+      isDeleted: false,
+    },
     include: {
       podcast: true, // Include related podcast info if needed
     },
@@ -95,8 +102,8 @@ exports.GetFileByUUID = catchAsync(async (req, res) => {
     if (!id) {
       return errorResponse(res, "UUID is required", 400);
     }
-    const file = await prisma.files.findUnique({
-      where: { uuid:id },
+    const file = await prisma.episode.findUnique({
+      where: { uuid:id, isDeleted:false },
       include: {
         podcast: true, // Include related podcast info if needed
       },

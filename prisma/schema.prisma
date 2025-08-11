@@ -20,7 +20,7 @@ model Podcast {
   thumbnail      String
   name           String   @unique
   email          String
-  langauage      String[]
+  language      String[]
   description    String
   createdAt      DateTime @default(now()) // Use timestamp for creation time
   author         String   @default("The Property Portfolio Podcast")  // Optional
