@@ -27,6 +27,7 @@ app.use("/", require("./route/rssRoutes"));
 app.use("/api", require("./route/fileRoutes"));
 app.use("/api", require("./route/subscriberRoutes"));
 app.use("/api", require("./route/contactRoutes"));
+app.use("/api", require("./route/adminRoutes"));
 
 
 app.get("/", (req, res) => {

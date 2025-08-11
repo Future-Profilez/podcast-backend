@@ -1,7 +1,6 @@
 const { errorResponse, successResponse, validationErrorResponse } = require("../utils/ErrorHandling");
 const { v4: uuidv4 } = require('uuid');
 const catchAsync = require("../utils/catchAsync");
-const { getAllPodcasts, getAllPodcastswithFiles, getPodcastDetail, updatefiles, deletefile } = require("../queries/fileQueries");
 const { uploadFileToSpaces, deleteFileFromSpaces } = require("../utils/FileUploader");
 const prisma = require("../prismaconfig");
 const { error } = require("winston");
@@ -182,7 +181,7 @@ exports.UpdatePodcast = catchAsync(async (req, res) => {
   }
 });
 
-exports.DeletePodcast = catchAsync(async (req, res) => {
+exports.DisablePodcast = catchAsync(async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -196,21 +195,31 @@ exports.DeletePodcast = catchAsync(async (req, res) => {
       return errorResponse(res, "Podcast not found", 404);
     }
 
-    // Soft delete episodes
+    // Determine the new isDeleted state (toggle)
+    const newIsDeletedState = !podcast.isDeleted;
+
+    // Update episodes
     await prisma.episode.updateMany({
       where: { podcastId: podcast.id },
-      data: { isDeleted: true },
+      data: { isDeleted: newIsDeletedState },
     });
 
-    // Soft delete podcast
+    // Update podcast
     const updatedPodcast = await prisma.podcast.update({
       where: { uuid: id },
-      data: { isDeleted: true },
+      data: { isDeleted: newIsDeletedState },
     });
 
-    return successResponse(res, "Podcast and episodes soft-deleted successfully", 200, updatedPodcast);
+    const action = newIsDeletedState ? "disabled" : "enabled";
+
+    return successResponse(
+      res,
+      `Podcast and episodes ${action} successfully`,
+      200,
+      updatedPodcast
+    );
   } catch (error) {
-    console.error("DeletePodcast error:", error);
+    console.error("DisablePodcast error:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });
@@ -240,10 +249,10 @@ exports.AddEpisode = catchAsync(async (req, res) => {
       uuid: uuidv4(),
       title,
       description,
-      duration: duration ? Number(duration) : 0,            // fallback if duration provided, else 0
+      duration: duration ? Number(duration) : 0,           
       durationInSec: durationInSec ? Number(durationInSec*60) : 0,
-      mimefield: mimefield || "",                            // mime type or format info (optional)
-      size: req.body.size ? Number(req.body.size) : null,   // optional
+      mimefield: mimefield || "",                            
+      size: req.body.size ? Number(req.body.size) : null,   
       thumbnail,
       link,
       podcastId: Number(podcastId),
@@ -367,9 +376,11 @@ exports.DeleteEpisode = catchAsync(async (req, res) => {
       return errorResponse(res, "Episode not found", 404);
     }
 
+    const newIsDeletedState = !episode.isDeleted
+
     await prisma.episode.update({
       where: { uuid: id },
-      data: { isDeleted: true },
+      data: { isDeleted: newIsDeletedState },
     });
 
     return successResponse(res, "Episode soft-deleted successfully", 200);
@@ -378,7 +389,6 @@ exports.DeleteEpisode = catchAsync(async (req, res) => {
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });
-
 
 exports.UploadCheck = catchAsync(async (req, res) => {
   try {

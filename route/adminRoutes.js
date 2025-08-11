@@ -1,26 +1,26 @@
-const { AddFile, AddPodcast, GetAllPodcasts, PodcastsDetail, UpdateFile, DeleteFile, GetAllPodcastswithFiles, UpdatePodcast, DeletePodcast, GetAllFiles, GetFileByUUID } = require("../controller/adminController");
+const { AddFile, AddPodcast, GetAllPodcasts, PodcastsDetail, GetAllPodcastswithFiles, UpdatePodcast, DeletePodcast, AddEpisode, GetEpisodeByUUID, GetAllEpisodes, UpdateEpisode, DeleteEpisode, DisablePodcast } = require("../controller/adminController");
 const router = require("express").Router();
 const { verifyToken } = require("../utils/tokenVerify");
-const { upload } = require("../utils/FileUploader");
+const { upload, deleteFileFromSpaces } = require("../utils/FileUploader");
 
-router.post("/podcast/add", verifyToken, upload.single('thumbnail'), AddPodcast);
-router.get("/podcast/get", GetAllPodcasts);
-router.get("/podcast/get-detail/all", GetAllPodcastswithFiles);
-router.get("/podcast/get/:id", PodcastsDetail);
-router.post("/podcast/update/:id", verifyToken,  upload.single('thumbnail'), UpdatePodcast);
-router.delete("/podcast/delete/:id", verifyToken, DeletePodcast);
+router.post("/admin/podcast/add", verifyToken, upload.single('thumbnail'), AddPodcast);
+router.get("/admin/podcast/get", GetAllPodcasts);
+router.get("/admin/podcast/get-detail/all", GetAllPodcastswithFiles);
+router.get("/admin/podcast/get/:id", PodcastsDetail);
+router.post("/admin/podcast/update/:id", verifyToken,  upload.single('thumbnail'), UpdatePodcast);
+router.delete("/admin/podcast/delete/:id", verifyToken, DisablePodcast);
 
-router.post("/file/add", verifyToken, upload.fields([
+router.post("/admin/file/add", verifyToken, upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 },
-    ]), AddFile);
-router.get("/file/getAll", GetAllFiles);
-router.get("/file/get/:id", GetFileByUUID);
+    ]), AddEpisode);
+router.get("/admin/file/getAll", GetAllEpisodes);
+router.get("/admin/file/get/:id", GetEpisodeByUUID);
     
-router.post("/file/update/:id", verifyToken, upload.fields([
+router.post("/admin/file/update/:id", verifyToken, upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 },
-    ]), UpdateFile);
-router.delete("/file/delete/:id", verifyToken, DeleteFile);
+    ]), UpdateEpisode);
+router.delete("/admin/file/delete/:id", verifyToken, DeleteEpisode);
 
 module.exports = router;
