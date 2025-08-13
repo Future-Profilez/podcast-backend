@@ -7,7 +7,7 @@ const { error } = require("winston");
 
 exports.AddPodcast = catchAsync(async (req, res) => {
   try {
-    const { name, author, cast, description, email, langauage } = req.body;
+    const { name, author, cast, description, email, language } = req.body;
 
     if (!name || !description) {
       return errorResponse(res, "Name and description are required", 401);
@@ -28,7 +28,7 @@ exports.AddPodcast = catchAsync(async (req, res) => {
       description,
       author: author || undefined,  // Optional; Prisma default will apply if undefined
       email: email || undefined,
-      langauage: langauage ? (typeof langauage === "string" ? JSON.parse(langauage) : langauage) : undefined,
+      language: language ? (typeof language === "string" ? JSON.parse(language) : language) : undefined,
       cast: undefined, // will be set below if valid
     };
 
@@ -118,22 +118,23 @@ exports.PodcastsDetail = catchAsync(async (req, res) => {
 exports.UpdatePodcast = catchAsync(async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, author, cast, email, langauage } = req.body;
+    const { name, description, author, cast, email, language } = req.body;
+    // console.log("language", language);
     const dataToUpdate = {};
 
     if (name) dataToUpdate.name = name;
     if (description) dataToUpdate.description = description;
     if (author !== undefined) dataToUpdate.author = author;
     if (email !== undefined) dataToUpdate.email = email;
-    if (langauage !== undefined) {
+    if (language !== undefined) {
       try {
-        dataToUpdate.langauage =
-          typeof langauage === "string" ? JSON.parse(langauage) : langauage;
-        if (!Array.isArray(dataToUpdate.langauage)) {
-          return errorResponse(res, "Langauage must be an array of strings", 400);
+        dataToUpdate.language =
+          typeof language === "string" ? JSON.parse(language) : language;
+        if (!Array.isArray(dataToUpdate.language)) {
+          return errorResponse(res, "language must be an array of strings", 400);
         }
       } catch {
-        return errorResponse(res, "Invalid langauage format. Must be JSON array.", 400);
+        return errorResponse(res, "Invalid language format. Must be JSON array.", 400);
       }
     }
 
@@ -148,6 +149,7 @@ exports.UpdatePodcast = catchAsync(async (req, res) => {
         return errorResponse(res, "Invalid cast format. Must be JSON array.", 400);
       }
     }
+    // console.log("datatoupdate", dataToUpdate);
 
     // Fetch existing podcast
     const existingPodcast = await prisma.podcast.findUnique({
