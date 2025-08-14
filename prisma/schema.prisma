@@ -46,6 +46,19 @@ model Episode {
   podcast         Podcast @relation(fields: [podcastId], references: [id])
 }
 
+model Guide {
+  id              Int @id @default(autoincrement())
+  uuid            String @unique
+  title           String
+  description     String
+  author          String @default("The Property Portfolio Podcast")  // Optional
+  link            String
+  language        String[] 
+  thumbnail       String
+  isDeleted       Boolean    @default(false)
+  size            Int?   // Optional (nullable in DB)
+}
+
 model subscriber {
   id             Int      @id @default(autoincrement())
   email           String @unique   
