@@ -7,11 +7,19 @@ const { error } = require("winston");
 
 exports.GetAllPodcasts = catchAsync(async (req, res) => {
   try {
-    const data = await prisma.podcast.findMany({where: { isDeleted : false }});
-    // console.log("data", data)
-    if (!data) {
+    const data = await prisma.podcast.findMany({
+      where: { isDeleted: false },
+      include: {
+        _count: {
+          select: { episodes: true }, // count episodes for each podcast
+        },
+      },
+    });
+
+    if (!data || data.length === 0) {
       return errorResponse(res, "Podcasts not found", 404);
     }
+
     successResponse(res, "Podcasts Retrieved successfully", 200, data);
   } catch (error) {
     console.log("Podcast get error:", error);
@@ -78,10 +86,10 @@ exports.GetAllFiles = catchAsync(async (req, res) => {
       isDeleted: false,
     },
     include: {
-      podcast: true, // Include related podcast info if needed
+      podcast: true, 
     },
     orderBy: {
-      createdAt: 'desc', // Optional: sort newest first
+      createdAt: 'desc',
     },
   });
 
