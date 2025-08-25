@@ -16,9 +16,7 @@ async function getMediaDurationFromBuffer(buffer, filename) {
     ];
     const tempPath = path.join(os.tmpdir(), `${Date.now()}${ext}`);
     fs.writeFileSync(tempPath, buffer);
-
     let duration = 0;
-
     try {
         if (audioExts.includes(ext)) {
             const metadata = await mm.parseFile(tempPath);
