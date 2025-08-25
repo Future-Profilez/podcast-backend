@@ -250,18 +250,16 @@ exports.AddEpisode = catchAsync(async (req, res) => {
 
     // const mediaduration = await getMediaDurationFromBuffer(req.files.video[0].buffer);
     // console.log("Media duration (seconds):", mediaduration);
-   const mediaduration = await getMediaDurationFromBuffer(
+    const mediaduration = await getMediaDurationFromBuffer(
       req.files.video[0].buffer,
       req.files.video[0].originalname
     );
-    console.log("Duration (seconds):", mediaduration);
-
 
     const episodeData = {
       uuid: uuidv4(),
       title,
       description,
-      duration:  mediaduration ? Number((mediaduration / 60).toFixed(2)) : 0,
+      duration: mediaduration ? Number((mediaduration / 60).toFixed(2)) : 0,
       durationInSec: mediaduration ? Number(mediaduration.toFixed(2)) : 0,
       mimefield: mimefield || "",
       size: req.body.size ? Number(req.body.size) : null,
