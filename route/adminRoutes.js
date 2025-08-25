@@ -14,6 +14,7 @@ router.post("/admin/file/add", verifyToken, upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 },
     ]), AddEpisode);
+     
 router.get("/admin/file/getAll", GetAllEpisodes);
 router.get("/admin/file/get/:id", GetEpisodeByUUID);
     
