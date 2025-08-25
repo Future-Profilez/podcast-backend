@@ -4,6 +4,7 @@ const catchAsync = require("../utils/catchAsync");
 const { uploadFileToSpaces, deleteFileFromSpaces } = require("../utils/FileUploader");
 const prisma = require("../prismaconfig");
 const { error } = require("winston");
+const { getMediaDurationFromBuffer } = require("../utils/mediaDuration");
 
 exports.AddPodcast = catchAsync(async (req, res) => {
   try {
@@ -70,12 +71,12 @@ exports.GetAllPodcasts = catchAsync(async (req, res) => {
 exports.GetAllPodcastswithFiles = catchAsync(async (req, res) => {
   try {
     const data = await prisma.podcast.findMany({
-        include: {
+      include: {
         episodes: true,
-        },
-        orderBy: {
+      },
+      orderBy: {
         createdAt: "asc",
-        },
+      },
     });
     if (!data) {
       return errorResponse(res, "Podcasts not found", 404);
@@ -94,16 +95,16 @@ exports.PodcastsDetail = catchAsync(async (req, res) => {
       return errorResponse(res, "UUID is required", 400);
     }
     const data = await prisma.podcast.findUnique({
-        where: {
+      where: {
         uuid: id,
-        },
-        include: {
+      },
+      include: {
         episodes: {
-            orderBy: {
+          orderBy: {
             createdAt: "asc", // Oldest first
-            },
+          },
         },
-        },
+      },
     });
     if (!data) {
       return errorResponse(res, "Podcasts not found", 404);
@@ -247,14 +248,23 @@ exports.AddEpisode = catchAsync(async (req, res) => {
       thumbnail = await uploadFileToSpaces(req.files.thumbnail[0]);
     }
 
+    // const mediaduration = await getMediaDurationFromBuffer(req.files.video[0].buffer);
+    // console.log("Media duration (seconds):", mediaduration);
+   const mediaduration = await getMediaDurationFromBuffer(
+      req.files.video[0].buffer,
+      req.files.video[0].originalname
+    );
+    console.log("Duration (seconds):", mediaduration);
+
+
     const episodeData = {
       uuid: uuidv4(),
       title,
       description,
-      duration: duration ? Number(duration) : 0,           
-      durationInSec: durationInSec ? Number(durationInSec*60) : 0,
-      mimefield: mimefield || "",                            
-      size: req.body.size ? Number(req.body.size) : null,   
+      duration:  mediaduration ? Number((mediaduration / 60).toFixed(2)) : 0,
+      durationInSec: mediaduration ? Number(mediaduration.toFixed(2)) : 0,
+      mimefield: mimefield || "",
+      size: req.body.size ? Number(req.body.size) : null,
       thumbnail,
       link,
       podcastId: Number(podcastId),
@@ -272,13 +282,13 @@ exports.AddEpisode = catchAsync(async (req, res) => {
 exports.GetAllEpisodes = catchAsync(async (req, res) => {
   try {
     const data = await prisma.episode.findMany({
-    include: {
-      podcast: true, 
-    },
-    orderBy: {
-      createdAt: 'desc', 
-    },
-  });
+      include: {
+        podcast: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
     if (!data || data.length === 0) {
       return errorResponse(res, "Files not found", 404);
@@ -298,9 +308,9 @@ exports.GetEpisodeByUUID = catchAsync(async (req, res) => {
       return errorResponse(res, "UUID is required", 400);
     }
     const file = await prisma.episode.findUnique({
-      where: { uuid:id },
+      where: { uuid: id },
       include: {
-        podcast: true, 
+        podcast: true,
       },
     });
     if (!file) {
