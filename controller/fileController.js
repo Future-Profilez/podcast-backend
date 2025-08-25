@@ -79,6 +79,32 @@ exports.PodcastsDetail = catchAsync(async (req, res) => {
   }
 });
 
+exports.HomeEpisodesGet = catchAsync(async (req, res) => {
+  try {
+    const data = await prisma.episode.findMany({
+    where: {
+      isDeleted: false,
+    },
+    include: {
+      podcast: true, 
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 4,
+  });
+
+    if (!data || data.length === 0) {
+      return errorResponse(res, "Files not found", 404);
+    }
+
+    return successResponse(res, "Files retrieved successfully", 200, data);
+  } catch (error) {
+    console.error("File retrieval error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
 exports.GetAllFiles = catchAsync(async (req, res) => {
   try {
     const data = await prisma.episode.findMany({
@@ -91,6 +117,7 @@ exports.GetAllFiles = catchAsync(async (req, res) => {
     orderBy: {
       createdAt: 'desc',
     },
+    // take: 4,
   });
 
     if (!data || data.length === 0) {
