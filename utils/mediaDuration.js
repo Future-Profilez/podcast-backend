@@ -22,9 +22,9 @@ async function getMediaDurationFromBuffer(buffer, filename) {
     try {
         if (audioExts.includes(ext)) {
             const metadata = await mm.parseFile(tempPath);
-            duration = metadata.format.duration; 
+            duration = metadata.format.duration;
         } else if (videoExts.includes(ext)) {
-            duration = await getVideoDurationInSeconds(tempPath); 
+            duration = await getVideoDurationInSeconds(tempPath);
         } else {
             throw new Error("Unsupported media type");
         }
