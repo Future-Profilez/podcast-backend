@@ -415,3 +415,90 @@ exports.UploadCheck = catchAsync(async (req, res) => {
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });
+
+exports.AddGuide = catchAsync(async (req, res) => {
+  try {    
+    const { title, description, author, language, pages } = req.body;
+
+    if (!req.files || !req.files.guide) {
+      return errorResponse(res, "Guide file is required", 401);
+    }
+
+    const link = await uploadFileToSpaces(req.files.guide[0]);
+
+    let thumbnail = "";
+    if (req.files.thumbnail) {
+      thumbnail = await uploadFileToSpaces(req.files.thumbnail[0]);
+    }
+
+    const newGuide = await prisma.guide.create({
+      data: {
+        uuid: uuidv4(),
+        title,
+        description,
+        author: author || "The Property Portfolio Podcast",
+        link,
+        language: language ? (typeof language === "string" ? JSON.parse(language) : language) : undefined,
+        thumbnail,
+        pages,
+      },
+    });
+
+    return successResponse(res, "Guide uploaded successfully", 201, newGuide);
+  } catch (error) {
+    console.error("Error in AddGuide:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.UpdateGuide = catchAsync(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const dataToUpdate = {};
+    const { title, description, author, language, pages } = req.body;
+
+    if (title) dataToUpdate.title = title;
+    if (description) dataToUpdate.description = description;
+    if (author !== undefined) dataToUpdate.author = author;
+    if (language !== undefined) {
+      dataToUpdate.language = typeof language === "string" ? JSON.parse(language) : language;
+    }
+    if (pages !== undefined) dataToUpdate.pages = Number(pages);
+
+    const existingData = await prisma.guide.findUnique({
+      where: { uuid: id },
+    });
+
+    if (!existingData) {
+      return errorResponse(res, "Guide not found", 404);
+    }
+
+    if (req.files?.thumbnail?.[0]) {
+      const isDeleted = await deleteFileFromSpaces(existingData.thumbnail);
+      if (!isDeleted) {
+        return errorResponse(res, "Unable to delete old thumbnail", 500);
+      }
+      const fileKey = await uploadFileToSpaces(req.files.thumbnail[0]);
+      dataToUpdate.thumbnail = fileKey;
+    }
+
+    if (req.files?.guide?.[0]) {
+      const isDeleted = await deleteFileFromSpaces(existingData.link);
+      if (!isDeleted) {
+        return errorResponse(res, "Unable to delete old guide file", 500);
+      }
+      const fileKey = await uploadFileToSpaces(req.files.guide[0]);
+      dataToUpdate.link = fileKey;
+    }
+
+    const updatedGuide = await prisma.guide.update({
+      where: { uuid: id },
+      data: dataToUpdate,
+    });
+
+    return successResponse(res, "Guide updated successfully", 200, updatedGuide);
+  } catch (error) {
+    console.error("UpdateGuide error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
