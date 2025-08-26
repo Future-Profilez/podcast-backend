@@ -48,25 +48,26 @@ model Episode {
 
 model Guide {
   id              Int @id @default(autoincrement())
-  uuid            String @unique
+  uuid            String  @unique
   title           String
   description     String
-  author          String @default("The Property Portfolio Podcast")  // Optional
+  author          String  @default("The Property Portfolio Podcast")  // Optional
   link            String
   language        String[] 
   thumbnail       String
-  isDeleted       Boolean    @default(false)
-  size            Int?   // Optional (nullable in DB)
+  isDeleted       Boolean @default(false)
+  pages           Int?   
+  downloads       Int     @default(0)
 }
 
 model subscriber {
-  id             Int      @id @default(autoincrement())
-  email           String @unique   
+  id             Int    @id @default(autoincrement())
+  email          String @unique   
 }
 
 model contact {
-  id             Int      @id @default(autoincrement())
-  email           String @unique   
-  name            String
-  message         String
+  id             Int    @id @default(autoincrement())
+  email          String @unique   
+  name           String
+  message        String
 }
