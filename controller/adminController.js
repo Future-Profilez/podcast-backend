@@ -440,7 +440,7 @@ exports.AddGuide = catchAsync(async (req, res) => {
         link,
         language: language ? (typeof language === "string" ? JSON.parse(language) : language) : undefined,
         thumbnail,
-        pages,
+        pages: Number(pages) || null,
       },
     });
 
@@ -499,6 +499,19 @@ exports.UpdateGuide = catchAsync(async (req, res) => {
     return successResponse(res, "Guide updated successfully", 200, updatedGuide);
   } catch (error) {
     console.error("UpdateGuide error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.GetAllGuides = catchAsync(async (req, res) => {
+  try {
+    const data = await prisma.guide.findMany()
+    if (!data) {
+      return errorResponse(res, "Guides not found", 404);
+    }
+    successResponse(res, "Guides Retrieved successfully", 200, data);
+  } catch (error) {
+    console.log("Guides get error:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });

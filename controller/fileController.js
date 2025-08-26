@@ -168,3 +168,21 @@ exports.UploadCheck = catchAsync(async (req, res) => {
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });
+
+exports.GetAllGuides = catchAsync(async (req, res) => {
+  try {
+    const data = await prisma.guide.findMany({
+    where: {
+      isDeleted: false,
+    },
+  });
+
+    if (!data || data.length === 0) {
+      return errorResponse(res, "Guides not found", 404);
+    }
+    return successResponse(res, "Guides retrieved successfully", 200, data);
+  } catch (error) {
+    console.error("File retrieval error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
