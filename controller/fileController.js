@@ -107,18 +107,39 @@ exports.HomeEpisodesGet = catchAsync(async (req, res) => {
 
 exports.GetAllFiles = catchAsync(async (req, res) => {
   try {
-    const data = await prisma.episode.findMany({
-    where: {
+    const { search } = req.query;
+
+    const whereClause = {
       isDeleted: false,
-    },
-    include: {
-      podcast: true, 
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    // take: 4,
-  });
+      ...(search && {
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: "insensitive", // case-insensitive
+            },
+          },
+          {
+            podcast: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      }),
+    };
+
+    const data = await prisma.episode.findMany({
+      where: whereClause,
+      include: {
+        podcast: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     if (!data || data.length === 0) {
       return errorResponse(res, "Files not found", 404);
@@ -169,18 +190,62 @@ exports.UploadCheck = catchAsync(async (req, res) => {
   }
 });
 
-exports.GetAllGuides = catchAsync(async (req, res) => {
+exports.HomeGuideGet = catchAsync(async (req, res) => {
   try {
     const data = await prisma.guide.findMany({
     where: {
       isDeleted: false,
     },
+    take: 4,
   });
 
     if (!data || data.length === 0) {
       return errorResponse(res, "Guides not found", 404);
     }
     return successResponse(res, "Guides retrieved successfully", 200, data);
+  } catch (error) {
+    console.error("File retrieval error:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
+exports.GetAllGuides = catchAsync(async (req, res) => {
+  try {
+    let { page, limit } = req.query;
+
+    // Default values
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    // Get total count
+    const total = await prisma.guide.count({
+      where: {
+        isDeleted: false,
+      },
+    });
+
+    // Get paginated data
+    const data = await prisma.guide.findMany({
+      where: {
+        isDeleted: false,
+      },
+      skip,
+      take: limit,
+    });
+
+    if (!data || data.length === 0) {
+      return errorResponse(res, "Guides not found", 404);
+    }
+
+    return successResponse(res, "Guides retrieved successfully", 200, {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      guides:data,
+    });
   } catch (error) {
     console.error("File retrieval error:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
