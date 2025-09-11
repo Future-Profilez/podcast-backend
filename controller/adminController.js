@@ -229,9 +229,9 @@ exports.DisablePodcast = catchAsync(async (req, res) => {
 
 exports.AddEpisode = catchAsync(async (req, res) => {
   try {
-    const { title, description, podcastId, durationInSec, mimefield, duration } = req.body;
+    const { title, description, podcastId, durationInSec, mimefield, duration, detail } = req.body;
 
-    if (!title || !description || !podcastId) {
+    if (!title || !description || !podcastId || !detail) {
       return errorResponse(res, "Title, description, and podcastId are required", 401);
     }
 
@@ -266,6 +266,7 @@ exports.AddEpisode = catchAsync(async (req, res) => {
       thumbnail,
       link,
       podcastId: Number(podcastId),
+      detail,
     };
 
     const newEpisode = await prisma.episode.create({ data: episodeData });
