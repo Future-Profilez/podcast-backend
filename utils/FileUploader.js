@@ -4,8 +4,8 @@ const { v4: uuidv4 } = require('uuid');
 
 // ✅ Backblaze B2 S3-compatible client
 const s3Client = new S3Client({
-  region: process.env.B2_REGION, // Example: "us-west-002"
-  endpoint: process.env.B2_ENDPOINT, // Example: "https://s3.us-west-002.backblazeb2.com"
+  region: process.env.B2_REGION, 
+  endpoint: process.env.B2_ENDPOINT,
   credentials: {
     accessKeyId: process.env.B2_KEY_ID,
     secretAccessKey: process.env.B2_APPLICATION_KEY,
