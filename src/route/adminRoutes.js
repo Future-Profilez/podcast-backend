@@ -10,10 +10,10 @@ router.get("/admin/podcast/get/:id", PodcastsDetail);
 router.post("/admin/podcast/update/:id", verifyToken,  upload.single('thumbnail'), UpdatePodcast);
 router.delete("/admin/podcast/delete/:id", verifyToken, DisablePodcast);
 
-// router.post("/admin/file/add", verifyToken, upload.fields([
-//     { name: 'video', maxCount: 1 },
-//     { name: 'thumbnail', maxCount: 1 },
-//     ]), AddEpisode);
+router.post("/admin/file/add", verifyToken, upload.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'thumbnail', maxCount: 1 },
+    ]), AddEpisode);
      
 router.get("/admin/file/getAll", GetAllEpisodes);
 router.get("/admin/file/get/:id", GetEpisodeByUUID);
