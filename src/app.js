@@ -22,12 +22,12 @@ app.use(express.urlencoded({ extended: true, limit: "2000mb" }));
 
 const PORT = process.env.REACT_APP_SERVER_DOMAIN || 5000;
 
-// app.use("/api", require("./route/userRoutes"));
-// app.use("/", require("./route/rssRoutes"));
-// app.use("/api", require("./route/fileRoutes"));
-app.use("/api", require("./route/subscriberRoutes"));
-app.use("/api", require("./route/contactRoutes"));
-app.use("/api", require("./route/adminRoutes"));
+app.use("/api", require("./route/userRoutes"));
+app.use("/", require("./route/rssRoutes"));
+app.use("/api", require("./route/fileRoutes"));
+// app.use("/api", require("./route/subscriberRoutes"));
+// app.use("/api", require("./route/contactRoutes"));
+// app.use("/api", require("./route/adminRoutes"));
 
 
 app.get("/", (req, res) => {
