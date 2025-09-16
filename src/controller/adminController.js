@@ -6,53 +6,53 @@ const prisma = require("../prismaconfig");
 // const { error } = require("winston");
 // const { getMediaDurationFromBuffer } = require("../utils/mediaDuration");
 
-// exports.AddPodcast = catchAsync(async (req, res) => {
-//   try {
-//     const { name, author, cast, description, email, language } = req.body;
+exports.AddPodcast = catchAsync(async (req, res) => {
+  try {
+    const { name, author, cast, description, email, language } = req.body;
 
-//     if (!name || !description) {
-//       return errorResponse(res, "Name and description are required", 401);
-//     }
+    if (!name || !description) {
+      return errorResponse(res, "Name and description are required", 401);
+    }
 
-//     if (!req.file) {
-//       return errorResponse(res, "Thumbnail is required", 401);
-//     }
+    if (!req.file) {
+      return errorResponse(res, "Thumbnail is required", 401);
+    }
 
-//     // Upload thumbnail file to Spaces or wherever
-//     const thumbnailKey = await uploadFileToSpaces(req.file);
+    // Upload thumbnail file to Spaces or wherever
+    const thumbnailKey = await uploadFileToSpaces(req.file);
 
-//     // Build podcast data object
-//     const podcastData = {
-//       uuid: uuidv4(),
-//       name,
-//       thumbnail: thumbnailKey,
-//       description,
-//       author: author || undefined,  // Optional; Prisma default will apply if undefined
-//       email: email || undefined,
-//       language: language ? (typeof language === "string" ? JSON.parse(language) : language) : undefined,
-//       cast: undefined, // will be set below if valid
-//     };
+    // Build podcast data object
+    const podcastData = {
+      uuid: uuidv4(),
+      name,
+      thumbnail: thumbnailKey,
+      description,
+      author: author || undefined,  // Optional; Prisma default will apply if undefined
+      email: email || undefined,
+      language: language ? (typeof language === "string" ? JSON.parse(language) : language) : undefined,
+      cast: undefined, // will be set below if valid
+    };
 
-//     if (cast) {
-//       try {
-//         const castArray = typeof cast === "string" ? JSON.parse(cast) : cast;
-//         if (!Array.isArray(castArray)) {
-//           return errorResponse(res, "Cast must be an array of strings", 400);
-//         }
-//         podcastData.cast = castArray;
-//       } catch {
-//         return errorResponse(res, "Invalid Cast format. Must be a JSON array.", 400);
-//       }
-//     }
+    if (cast) {
+      try {
+        const castArray = typeof cast === "string" ? JSON.parse(cast) : cast;
+        if (!Array.isArray(castArray)) {
+          return errorResponse(res, "Cast must be an array of strings", 400);
+        }
+        podcastData.cast = castArray;
+      } catch {
+        return errorResponse(res, "Invalid Cast format. Must be a JSON array.", 400);
+      }
+    }
 
-//     const newPodcast = await prisma.podcast.create({ data: podcastData });
+    const newPodcast = await prisma.podcast.create({ data: podcastData });
 
-//     return successResponse(res, "Podcast created successfully!", 201, newPodcast);
-//   } catch (error) {
-//     console.error("Error in AddPodcast:", error);
-//     return errorResponse(res, error.message || "Internal Server Error", 500);
-//   }
-// });
+    return successResponse(res, "Podcast created successfully!", 201, newPodcast);
+  } catch (error) {
+    console.error("Error in AddPodcast:", error);
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
 
 exports.GetAllPodcasts = catchAsync(async (req, res) => {
   try {
