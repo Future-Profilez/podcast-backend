@@ -4,7 +4,7 @@ const catchAsync = require("../utils/catchAsync");
 const { uploadFileToSpaces, deleteFileFromSpaces } = require("../utils/FileUploader");
 const prisma = require("../prismaconfig");
 const { error } = require("winston");
-const { getMediaDurationFromBuffer } = require("../utils/mediaDuration");
+// const { getMediaDurationFromBuffer } = require("../utils/mediaDuration");
 
 exports.AddPodcast = catchAsync(async (req, res) => {
   try {
@@ -227,56 +227,56 @@ exports.DisablePodcast = catchAsync(async (req, res) => {
   }
 });
 
-exports.AddEpisode = catchAsync(async (req, res) => {
-  try {
-    const { title, description, podcastId, durationInSec, mimefield, duration, detail } = req.body;
+// exports.AddEpisode = catchAsync(async (req, res) => {
+//   try {
+//     const { title, description, podcastId, durationInSec, mimefield, duration, detail } = req.body;
 
-    if (!title || !description || !podcastId || !detail) {
-      return errorResponse(res, "Title, description, and podcastId are required", 401);
-    }
+//     if (!title || !description || !podcastId || !detail) {
+//       return errorResponse(res, "Title, description, and podcastId are required", 401);
+//     }
 
-    if (!req.files || !req.files.video) {
-      return errorResponse(res, "Video/audio file is required", 401);
-    }
+//     if (!req.files || !req.files.video) {
+//       return errorResponse(res, "Video/audio file is required", 401);
+//     }
 
-    // Upload media file
-    const link = await uploadFileToSpaces(req.files.video[0]);
+//     // Upload media file
+//     const link = await uploadFileToSpaces(req.files.video[0]);
 
-    // Upload thumbnail if provided
-    let thumbnail = "";
-    if (req.files.thumbnail) {
-      thumbnail = await uploadFileToSpaces(req.files.thumbnail[0]);
-    }
+//     // Upload thumbnail if provided
+//     let thumbnail = "";
+//     if (req.files.thumbnail) {
+//       thumbnail = await uploadFileToSpaces(req.files.thumbnail[0]);
+//     }
 
-    // const mediaduration = await getMediaDurationFromBuffer(req.files.video[0].buffer);
-    // console.log("Media duration (seconds):", mediaduration);
-    const mediaduration = await getMediaDurationFromBuffer(
-      req.files.video[0].buffer,
-      req.files.video[0].originalname
-    );
+//     // const mediaduration = await getMediaDurationFromBuffer(req.files.video[0].buffer);
+//     // console.log("Media duration (seconds):", mediaduration);
+//     const mediaduration = await getMediaDurationFromBuffer(
+//       req.files.video[0].buffer,
+//       req.files.video[0].originalname
+//     );
 
-    const episodeData = {
-      uuid: uuidv4(),
-      title,
-      description,
-      duration: mediaduration ? Number((mediaduration / 60).toFixed(2)) : 0,
-      durationInSec: mediaduration ? Number(mediaduration.toFixed(2)) : 0,
-      mimefield: mimefield || "",
-      size: req.body.size ? Number(req.body.size) : null,
-      thumbnail,
-      link,
-      podcastId: Number(podcastId),
-      detail,
-    };
+//     const episodeData = {
+//       uuid: uuidv4(),
+//       title,
+//       description,
+//       duration: mediaduration ? Number((mediaduration / 60).toFixed(2)) : 0,
+//       durationInSec: mediaduration ? Number(mediaduration.toFixed(2)) : 0,
+//       mimefield: mimefield || "",
+//       size: req.body.size ? Number(req.body.size) : null,
+//       thumbnail,
+//       link,
+//       podcastId: Number(podcastId),
+//       detail,
+//     };
 
-    const newEpisode = await prisma.episode.create({ data: episodeData });
+//     const newEpisode = await prisma.episode.create({ data: episodeData });
 
-    return successResponse(res, "Episode uploaded successfully", 201, newEpisode);
-  } catch (error) {
-    console.error("Error in AddEpisode:", error);
-    return errorResponse(res, error.message || "Internal Server Error", 500);
-  }
-});
+//     return successResponse(res, "Episode uploaded successfully", 201, newEpisode);
+//   } catch (error) {
+//     console.error("Error in AddEpisode:", error);
+//     return errorResponse(res, error.message || "Internal Server Error", 500);
+//   }
+// });
 
 exports.GetAllEpisodes = catchAsync(async (req, res) => {
   try {
