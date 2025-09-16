@@ -6,7 +6,7 @@ require("./prismaconfig");
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const serverless = require('serverless-http');
+// const serverless = require('serverless-http');
 
 const corsOptions = {
   origin: "*", // Allowed origins
@@ -36,8 +36,10 @@ app.get("/", (req, res) => {
     status: 200,
   });
 });
-const server = app.listen(PORT, () =>
-  console.log("Server is running at port : " + PORT)
-);
-// server.timeout = 360000;
-module.exports = serverless(app);
+// const server = app.listen(PORT, () =>
+//   console.log("Server is running at port : " + PORT)
+// );
+// // server.timeout = 360000;
+// module.exports = serverless(app);
+const server = app.listen(PORT, () => console.log("Server is running at port : " + PORT));
+server.timeout = 360000;
