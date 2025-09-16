@@ -1,7 +1,7 @@
 const { AddPodcast, GetAllPodcasts, PodcastsDetail, GetAllPodcastswithFiles, UpdatePodcast, AddEpisode, GetEpisodeByUUID, GetAllEpisodes, UpdateEpisode, DeleteEpisode, DisablePodcast, AddGuide, UpdateGuide, GetAllGuides } = require("../controller/adminController");
 const router = require("express").Router();
 const { verifyToken } = require("../utils/tokenVerify");
-// const { upload } = require("../utils/FileUploader");
+const { upload } = require("../utils/FileUploader");
 
 router.post("/admin/podcast/add", verifyToken, upload.single('thumbnail'), AddPodcast);
 router.get("/admin/podcast/get", GetAllPodcasts);
