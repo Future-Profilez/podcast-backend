@@ -4,7 +4,7 @@ const catchAsync = require("../utils/catchAsync");
 const { uploadFileToSpaces, deleteFileFromSpaces } = require("../utils/FileUploader");
 const prisma = require("../prismaconfig");
 const { error } = require("winston");
-// const { getMediaDurationFromBuffer } = require("../utils/mediaDuration");
+const { getMediaDurationFromBuffer } = require("../utils/mediaDuration");
 
 exports.AddPodcast = catchAsync(async (req, res) => {
   try {
