@@ -417,6 +417,30 @@ exports.UploadCheck = catchAsync(async (req, res) => {
   }
 });
 
+exports.DeleteCheck = catchAsync(async (req, res) => {
+  try {
+    const {url} = req.body;
+    console.log("req.body", req.body);
+    if (!url) {
+      return res.status(500).json({ error: 'File URL toh bhej bhai' });
+    }
+    const fileKey = await deleteFileFromSpaces(url);
+    if (fileKey) {
+      res.status(200).json({
+        status: true,
+        message: "Code chal gaya"
+      });
+    } else {
+      res.status(500).json({ 
+        status: false,
+        message: 'Code nhi chala' 
+      });
+    }
+  } catch (error) {
+    return errorResponse(res, error.message || "Internal Server Error", 500);
+  }
+});
+
 exports.AddGuide = catchAsync(async (req, res) => {
   try {    
     const { title, description, author, language, pages } = req.body;
