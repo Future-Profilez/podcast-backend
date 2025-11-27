@@ -229,42 +229,41 @@ exports.DisablePodcast = catchAsync(async (req, res) => {
 
 exports.AddEpisode = catchAsync(async (req, res) => {
   try {
-    const { title, description, podcastId, durationInSec, mimefield, duration, detail } = req.body;
+    const {
+      title,
+      description,
+      podcastId,
+      detail,
+      size,
+      link,
+      mimefield,
+      duration,
+      durationInSec
+    } = req.body;
 
-    if (!title || !description || !podcastId || !detail) {
-      return errorResponse(res, "Title, description, and podcastId are required", 401);
+    if (!title || !description || !podcastId || !detail || !link) {
+      return errorResponse(
+        res,
+        "Title, description, podcastId & video link are required",
+        401
+      );
     }
 
-    if (!req.files || !req.files.video) {
-      return errorResponse(res, "Video/audio file is required", 401);
-    }
-
-    // Upload media file
-    const link = await uploadFileToSpaces(req.files.video[0]);
-
-    // Upload thumbnail if provided
     let thumbnail = "";
-    if (req.files.thumbnail) {
+    if (req.files?.thumbnail) {
       thumbnail = await uploadFileToSpaces(req.files.thumbnail[0]);
     }
-
-    // const mediaduration = await getMediaDurationFromBuffer(req.files.video[0].buffer);
-    // console.log("Media duration (seconds):", mediaduration);
-    const mediaduration = await getMediaDurationFromBuffer(
-      req.files.video[0].buffer,
-      req.files.video[0].originalname
-    );
 
     const episodeData = {
       uuid: uuidv4(),
       title,
       description,
-      duration: mediaduration ? Number((mediaduration / 60).toFixed(2)) : 0,
-      durationInSec: mediaduration ? Number(mediaduration.toFixed(2)) : 0,
+      duration: duration ? Number(duration) : 0,
+      durationInSec: durationInSec ? Number(durationInSec) : 0,
       mimefield: mimefield || "",
-      size: req.body.size ? Number(req.body.size) : null,
+      size: size ? Number(size) : null,
       thumbnail,
-      link,
+      link, // already uploaded large file URL
       podcastId: Number(podcastId),
       detail,
     };
