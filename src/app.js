@@ -17,8 +17,21 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+/**
+ * IMPORTANT:
+ * Disable JSON/urlencoded/body-parsing ONLY for chunk upload PART route
+ * so Backblaze receives a real raw binary stream
+ */
+const uploadLargeController = require("./controller/largeUploadController");
+app.put(
+  "/api/upload/part",
+  express.raw({ type: "*/*", limit: "100GB" }),
+  uploadLargeController.uploadLargePart
+);
+
 app.use(express.json({ limit: "2000mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2000mb" }));
+app.use(express.raw({ type: "application/octet-stream", limit: "0" }));
 
 const PORT = process.env.REACT_APP_SERVER_DOMAIN || 5000;
 
@@ -28,6 +41,7 @@ app.use("/api", require("./route/fileRoutes"));
 app.use("/api", require("./route/subscriberRoutes"));
 app.use("/api", require("./route/contactRoutes"));
 app.use("/api", require("./route/adminRoutes"));
+app.use("/api", require("./route/uploadLarge"));
 
 
 app.get("/", (req, res) => {
