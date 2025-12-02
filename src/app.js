@@ -23,15 +23,14 @@ app.use(cors(corsOptions));
  * so Backblaze receives a real raw binary stream
  */
 const uploadLargeController = require("./controller/largeUploadController");
-app.put(
-  "/api/upload/part",
-  express.raw({ type: "*/*", limit: "100GB" }),
+app.put("/api/upload/part",
+  express.raw({ type: "*/*", limit: "200000mb" }),
   uploadLargeController.uploadLargePart
 );
 
 app.use(express.json({ limit: "2000mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2000mb" }));
-app.use(express.raw({ type: "application/octet-stream", limit: "0" }));
+// app.use(express.raw({ type: "application/octet-stream", limit: "0" }));
 
 const PORT = process.env.REACT_APP_SERVER_DOMAIN || 5000;
 
