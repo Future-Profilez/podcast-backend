@@ -8,7 +8,8 @@ const s3 = new S3Client({
   credentials: {
     accessKeyId: process.env.B2_KEY_ID,
     secretAccessKey: process.env.B2_APPLICATION_KEY
-  }
+  },
+  forcePathStyle: true
 });
 
 exports.startLargeUpload = async (req, res) => {
@@ -40,13 +41,15 @@ exports.uploadLargePart = async (req, res) => {
   try {
     const { uploadId, key, partNumber } = req.query;
 
-    // 🚨 Read raw stream correctly
-    const chunks = [];
-    for await (const chunk of req) {
-      chunks.push(chunk);
-    }
-    const buffer = Buffer.concat(chunks);
+    // FIX: Do not stream 'req'. Use req.body directly because express.raw parsed it.
+    const buffer = req.body; 
 
+    // Safety check: ensure buffer exists
+    if (!buffer || buffer.length === 0) {
+        return res.status(400).json({ message: "Empty request body received" });
+    }
+
+    // Calculate MD5 (Backblaze/S3 recommends this for data integrity)
     const md5 = crypto.createHash("md5").update(buffer).digest("base64");
 
     const command = new UploadPartCommand({
