@@ -22,11 +22,11 @@ app.use(cors(corsOptions));
  * Disable JSON/urlencoded/body-parsing ONLY for chunk upload PART route
  * so Backblaze receives a real raw binary stream
  */
-const uploadLargeController = require("./controller/largeUploadController");
-app.put("/api/upload/part",
-  express.raw({ type: "*/*", limit: "200000mb" }),
-  uploadLargeController.uploadLargePart
-);
+// const uploadLargeController = require("./controller/largeUploadController");
+// app.put("/api/upload/part",
+//   express.raw({ type: "*/*", limit: "200000mb" }),
+//   uploadLargeController.uploadLargePart
+// );
 
 app.use(express.json({ limit: "2000mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2000mb" }));
