@@ -18,9 +18,9 @@ router.get("/admin/file/getAll", GetAllEpisodes);
 router.get("/admin/file/get/:id", GetEpisodeByUUID);
     
 router.post("/admin/file/update/:id", verifyToken, upload.fields([
-    { name: 'video', maxCount: 1 },
-    { name: 'thumbnail', maxCount: 1 },
-    ]), UpdateEpisode);
+    { name: "thumbnail", maxCount: 1 },
+  ]), UpdateEpisode);
+
 router.delete("/admin/file/delete/:id", verifyToken, DeleteEpisode);
 
 router.post("/admin/guide/add", verifyToken, upload.fields([

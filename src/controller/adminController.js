@@ -324,52 +324,64 @@ exports.GetEpisodeByUUID = catchAsync(async (req, res) => {
 exports.UpdateEpisode = catchAsync(async (req, res) => {
   try {
     const { id } = req.params;
-    const dataToUpdate = {};
-    const { title, description, duration, durationInSec, mimefield, size } = req.body;
+    const {
+      title,
+      description,
+      detail,
+      link,
+      duration,
+      durationInSec,
+      mimefield,
+      size,
+    } = req.body;
 
-    if (title) dataToUpdate.title = title;
-    if (description) dataToUpdate.description = description;
-    if (duration !== undefined) dataToUpdate.duration = Number(duration);
-    if (durationInSec !== undefined) dataToUpdate.durationInSec = Number(durationInSec);
-    if (mimefield !== undefined) dataToUpdate.mimefield = mimefield;
-    if (size !== undefined) dataToUpdate.size = Number(size);
-
-    const existingData = await prisma.episode.findUnique({
+    const existingEpisode = await prisma.episode.findUnique({
       where: { uuid: id },
     });
 
-    if (!existingData) {
+    if (!existingEpisode) {
       return errorResponse(res, "Episode not found", 404);
     }
 
-    // Handle thumbnail update
+    const updates = {};
+
+    if (title) updates.title = title;
+    if (description) updates.description = description;
+    if (detail) updates.detail = detail;
+    if (duration !== undefined) updates.duration = Number(duration);
+    if (durationInSec !== undefined) updates.durationInSec = Number(durationInSec);
+    if (mimefield !== undefined) updates.mimefield = mimefield;
+    if (size !== undefined) updates.size = Number(size);
+
+    // Handle thumbnail update only if new file comes
     if (req.files?.thumbnail?.[0]) {
-      const isDeleted = await deleteFileFromSpaces(existingData.thumbnail);
-      if (!isDeleted) {
-        return errorResponse(res, "Unable to delete old thumbnail", 500);
+      const isThumbDeleted = await deleteFileFromSpaces(existingEpisode.thumbnail);
+      if (!isThumbDeleted) {
+        console.warn("Failed to delete old thumbnail");
       }
-      const fileKey = await uploadFileToSpaces(req.files.thumbnail[0]);
-      dataToUpdate.thumbnail = fileKey;
+
+      const newThumbUrl = await uploadFileToSpaces(req.files.thumbnail[0]);
+      updates.thumbnail = newThumbUrl;
     }
 
-    // Handle video (link) update
-    if (req.files?.video?.[0]) {
-      const isDeleted = await deleteFileFromSpaces(existingData.link);
-      if (!isDeleted) {
-        return errorResponse(res, "Unable to delete old video", 500);
+    // --- NEW VIDEO LOGIC ---
+    if (link && link !== existingEpisode.link) {
+      const isVideoDeleted = await deleteFileFromSpaces(existingEpisode.link);
+      if (!isVideoDeleted) {
+        console.warn("Failed to delete old video file");
       }
-      const fileKey = await uploadFileToSpaces(req.files.video[0]);
-      dataToUpdate.link = fileKey;
+
+      updates.link = link;
     }
 
     const updatedEpisode = await prisma.episode.update({
       where: { uuid: id },
-      data: dataToUpdate,
+      data: updates,
     });
 
     return successResponse(res, "Episode updated successfully", 200, updatedEpisode);
   } catch (error) {
-    console.error("UpdateEpisode error:", error);
+    console.error("Error in UpdateEpisode:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });
