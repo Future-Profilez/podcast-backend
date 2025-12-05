@@ -9,18 +9,11 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     orderBy: { createdAt: "desc" }
   });
 
-  // console.log("episodes", episodes);
-
   if (!episodes || episodes.length === 0) {
     return errorResponse(res, "No episodes found", 404);
   }
 
   const podcast = episodes[0].podcast;
-
-  const language =
-    Array.isArray(podcast.language) && podcast.language.length > 0
-      ? podcast.language[0]
-      : "en-au";
 
   const feed = create({ version: "1.0", encoding: "UTF-8" })
     .ele("rss", {
@@ -32,21 +25,28 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
 
   // Channel Metadata
   feed.ele("title").txt(podcast.name).up();
-  feed.ele("link").txt(`https://thepropertyportfolio.com.au/`).up();
+  feed.ele("link").txt(`https://thepropertyportfolio.com.au/episode/${podcast?.uuid}`).up();
   feed.ele("description").txt(podcast.description || podcast.name).up();
   feed.ele("language").txt("en-au").up();
-  feed.ele("itunes:author").txt(podcast.author || "Unknown Author").up();
+  feed.ele("itunes:author").txt(podcast.author || "The Property Portfolio Podcast").up();
   feed.ele("itunes:summary").txt(podcast.description || podcast.name).up();
   feed.ele("itunes:subtitle").txt(podcast.name).up();
   feed.ele("itunes:explicit").txt("no").up();
 
   feed
     .ele("itunes:owner")
-      .ele("itunes:name").txt(podcast.author || podcast.name).up()
-      .ele("itunes:email").txt(podcast.email || "contact@example.com").up()
+      .ele("itunes:name").txt(podcast.author || "The Property Portfolio Podcast").up()
+      .ele("itunes:email").txt(podcast.email || "thepropertyportfoliopodcast@gmail.com").up()
     .up();
 
-  feed.ele("itunes:image").att("href", podcast.thumbnail).up();
+  // REQUIRED CATEGORY FOR APPLE
+  feed
+    .ele("itunes:category", { text: "Business" })
+      .ele("itunes:category", { text: "Investing" }).up()
+    .up();
+
+  // Podcast Artwork
+  feed.ele("itunes:image").att("href", podcast?.thumbnail || "").up();
 
   // Episodes
   episodes.forEach((ep, index) => {
@@ -59,6 +59,9 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
 
     item.ele("title").txt(ep.title).up();
     item.ele("description").txt(ep.description || "").up();
+
+    // WEBPAGE LINK - REQUIRED FIX
+    item.ele("link").txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
 
     item
       .ele("guid", { isPermaLink: "false" })
@@ -90,6 +93,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   res.set("Content-Type", "application/rss+xml");
   res.send(xml);
 });
+
 
 // exports.getpodcastLists = catchAsync(async (req, res) => {
 
