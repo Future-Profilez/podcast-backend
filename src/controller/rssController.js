@@ -1,78 +1,95 @@
 const { errorResponse } = require("../utils/ErrorHandling");
 const catchAsync = require("../utils/catchAsync");
 const prisma = require("../prismaconfig");
-const { create } = require('xmlbuilder2');
+const { create } = require("xmlbuilder2");
 
 exports.getpodcastLists = catchAsync(async (req, res) => {
-
   const episodes = await prisma.episode.findMany({
-    include: { podcast: true }
+    include: { podcast: true },
+    orderBy: { createdAt: "desc" }
   });
+
+  // console.log("episodes", episodes);
 
   if (!episodes || episodes.length === 0) {
     return errorResponse(res, "No episodes found", 404);
   }
 
-  const podcast = episodes[0].podcast; // Take podcast data from first episode
+  const podcast = episodes[0].podcast;
 
-  const feed = create({ version: '1.0', encoding: 'UTF-8' })
-    .ele('rss', {
-      version: '2.0',
-      'xmlns:itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
-      'xmlns:googleplay': 'http://www.google.com/schemas/play-podcasts/1.0'
+  const language =
+    Array.isArray(podcast.language) && podcast.language.length > 0
+      ? podcast.language[0]
+      : "en-au";
+
+  const feed = create({ version: "1.0", encoding: "UTF-8" })
+    .ele("rss", {
+      version: "2.0",
+      "xmlns:itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd",
+      "xmlns:googleplay": "http://www.google.com/schemas/play-podcasts/1.0"
     })
-    .ele('channel')
+    .ele("channel");
 
-      // Channel (Podcast) Metadata
-      .ele('title').txt(podcast.name).up()
-      .ele('link').txt(`https://thepropertyportfolio.com.au/episode/${podcast.uuid}`).up()
-      .ele('description').txt(podcast.description || podcast.name).up()
-      .ele('language').txt(podcast.language || 'en-US').up()
-      .ele('itunes:author').txt(podcast.author || "Unknown Author").up()
-      .ele('itunes:summary').txt(podcast.description || podcast.name).up()
-      .ele('itunes:subtitle').txt(podcast.name).up()
-      .ele('itunes:explicit').txt('no').up()
-      .ele('itunes:owner')
-        .ele('itunes:name').txt(podcast.author).up()
-        .ele('itunes:email').txt(podcast.email).up()
-      .up()
-      .ele('itunes:image').att('href', podcast.thumbnail).up();
+  // Channel Metadata
+  feed.ele("title").txt(podcast.name).up();
+  feed.ele("link").txt(`https://thepropertyportfolio.com.au/`).up();
+  feed.ele("description").txt(podcast.description || podcast.name).up();
+  feed.ele("language").txt("en-au").up();
+  feed.ele("itunes:author").txt(podcast.author || "Unknown Author").up();
+  feed.ele("itunes:summary").txt(podcast.description || podcast.name).up();
+  feed.ele("itunes:subtitle").txt(podcast.name).up();
+  feed.ele("itunes:explicit").txt("no").up();
 
-  // Add all episodes
+  feed
+    .ele("itunes:owner")
+      .ele("itunes:name").txt(podcast.author || podcast.name).up()
+      .ele("itunes:email").txt(podcast.email || "contact@example.com").up()
+    .up();
+
+  feed.ele("itunes:image").att("href", podcast.thumbnail).up();
+
+  // Episodes
   episodes.forEach((ep, index) => {
-    const item = feed.ele('item');
+    const item = feed.ele("item");
 
-    item.ele('title').txt(ep.title).up();
-    item.ele('description').txt(ep.description).up();
-    item.ele('guid').txt(ep.uuid).up();
-    item.ele('pubDate').txt(new Date(ep.createdAt).toUTCString()).up();
-    item.ele('itunes:duration').txt(ep.durationInSec?.toString() || '60').up();
-    item.ele('itunes:explicit').txt('no').up();
+    const enclosureUrl =
+      ep.link && ep.link !== "null"
+        ? ep.link
+        : `https://f004.backblazeb2.com/file/podcasts-episodes/audio/${ep.uuid}.mp3`;
 
-    // Season + Episode numbering
-    item.ele('itunes:season').txt(ep.season || 1).up();
-    item.ele('itunes:episode').txt(ep.episodeNumber || index + 1).up();
-    item.ele('itunes:episodeType').txt('full').up();
+    item.ele("title").txt(ep.title).up();
+    item.ele("description").txt(ep.description || "").up();
+
+    item
+      .ele("guid", { isPermaLink: "false" })
+      .txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`)
+      .up();
+
+    item.ele("pubDate").txt(new Date(ep.createdAt).toUTCString()).up();
+    item.ele("itunes:duration").txt(ep.durationInSec?.toString() || "60").up();
+    item.ele("itunes:explicit").txt("no").up();
+    item.ele("itunes:season").txt(ep.season || 1).up();
+    item.ele("itunes:episode").txt(ep.episodeNumber || index + 1).up();
+    item.ele("itunes:episodeType").txt("full").up();
 
     if (ep.thumbnail) {
-      item.ele('itunes:image')
-        .att('href', ep.thumbnail)
-      .up();
+      item.ele("itunes:image").att("href", ep.thumbnail).up();
     }
 
-    item.ele('enclosure', {
-      url: ep.link && ep.link !== "null" ? ep.link : `https://thepropertyportfolio.com.au/episode/${ep.uuid}.mp3`,
-      type: ep.mimefield || 'audio/mpeg',
-      length: ((ep.size || 1) * 1048576).toString()
-    }).up();
+    item
+      .ele("enclosure", {
+        url: enclosureUrl,
+        type: ep.mimefield || "video/mp4",
+        length: "627572736"
+      })
+      .up();
   });
 
   const xml = feed.end({ prettyPrint: true });
 
-  res.set('Content-Type', 'application/rss+xml');
+  res.set("Content-Type", "application/rss+xml");
   res.send(xml);
 });
-
 
 // exports.getpodcastLists = catchAsync(async (req, res) => {
 
