@@ -365,13 +365,14 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
     }
 
     // --- NEW VIDEO LOGIC ---
-    if (link && link !== existingEpisode.link) {
-      const isVideoDeleted = await deleteFileFromSpaces(existingEpisode.link);
-      if (!isVideoDeleted) {
-        console.warn("Failed to delete old video file");
+    if (typeof link === "string" && link.trim() !== "" && link !== existingEpisode.link) {
+      if (existingEpisode.link) {
+        const isVideoDeleted = await deleteFileFromSpaces(existingEpisode.link);
+        if (!isVideoDeleted) {
+          console.warn("Failed to delete old video file");
+        }
       }
-
-      updates.link = link;
+      updates.link = link.trim();
     }
 
     const updatedEpisode = await prisma.episode.update({
