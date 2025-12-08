@@ -2,7 +2,6 @@ const { errorResponse } = require("../utils/ErrorHandling");
 const catchAsync = require("../utils/catchAsync");
 const prisma = require("../prismaconfig");
 const { create } = require("xmlbuilder2");
-
 exports.getpodcastLists = catchAsync(async (req, res) => {
   const podcastId = req.params.podcastId;
   const type = req.params.type || 'video'; // 'video' | 'audio'
