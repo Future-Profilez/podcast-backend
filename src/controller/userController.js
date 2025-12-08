@@ -90,12 +90,10 @@ exports.GetUser = catchAsync(async (req, res) => {
         email: true,
       }
     });
-
     if (!user) {
       Loggers.error("Invalid User");
       return errorResponse(res, "Invalid User", 401);
     }
-
     return successResponse(res, "User Get successfully!", 201, {
       user,
     });

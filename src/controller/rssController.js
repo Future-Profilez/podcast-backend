@@ -12,7 +12,6 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   if (!podcast) {
     return errorResponse(res, "Podcast not found", 404);
   }
-  
   const episodes = await prisma.episode.findMany({
     where: { podcastId: podcast?.id },
     include: { podcast: true },
@@ -92,7 +91,6 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   res.set("Content-Type", "application/rss+xml");
   res.send(xml);
 });
-
 
 
 // exports.getpodcastLists = catchAsync(async (req, res) => {
