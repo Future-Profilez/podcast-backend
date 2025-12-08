@@ -55,7 +55,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     let enclosureUrl, mimeType, fileSize = "627572736";
     
     if (type === 'audio') {
-      enclosureUrl = ep.link;
+      enclosureUrl = ep.audioLink;
       mimeType = "audio/mpeg"; // Spotify/Apple compliant
     } else { // video
       enclosureUrl = ep.link;
