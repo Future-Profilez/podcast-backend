@@ -27,7 +27,11 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     })
     .ele("channel");
 
+<<<<<<< HEAD
   // Channel metadata
+=======
+  // Channel Metadata
+>>>>>>> 882dc2f9452413b3878384d1181bf77f8c995cc4
   feed.ele("title").txt(podcast.name).up();
   feed.ele("link").txt(`https://thepropertyportfolio.com.au/episode/${podcast?.uuid}`).up();
   feed.ele("description").txt(podcast.description || podcast.name).up();
@@ -36,6 +40,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   feed.ele("itunes:summary").txt(podcast.description || podcast.name).up();
   feed.ele("itunes:subtitle").txt(podcast.name).up();
   feed.ele("itunes:explicit").txt("no").up();
+<<<<<<< HEAD
   
   feed.ele("itunes:owner")
     .ele("itunes:name").txt(podcast.author || "The Property Portfolio Podcast").up()
@@ -67,6 +72,44 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     item.ele("link").txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
     item.ele("guid", { isPermaLink: "false" })
       .txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
+=======
+
+  feed
+    .ele("itunes:owner")
+      .ele("itunes:name").txt(podcast.author || "The Property Portfolio Podcast").up()
+      .ele("itunes:email").txt(podcast.email || "thepropertyportfoliopodcast@gmail.com").up()
+    .up();
+
+  // REQUIRED CATEGORY FOR APPLE
+  feed
+    .ele("itunes:category", { text: "Business" })
+      .ele("itunes:category", { text: "Investing" }).up()
+    .up();
+
+  // Podcast Artwork
+  feed.ele("itunes:image").att("href", podcast?.thumbnail || "").up();
+
+  // Episodes
+  episodes.forEach((ep, index) => {
+    const item = feed.ele("item");
+
+    const enclosureUrl =
+      ep.link && ep.link !== "null"
+        ? ep.link
+        : `https://f004.backblazeb2.com/file/podcasts-episodes/audio/${ep.uuid}.mp3`;
+
+    item.ele("title").txt(ep.title).up();
+    item.ele("description").txt(ep.description || "").up();
+
+    // WEBPAGE LINK - REQUIRED FIX
+    item.ele("link").txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
+
+    item
+      .ele("guid", { isPermaLink: "false" })
+      .txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`)
+      .up();
+
+>>>>>>> 882dc2f9452413b3878384d1181bf77f8c995cc4
     item.ele("pubDate").txt(new Date(ep.createdAt).toUTCString()).up();
     item.ele("itunes:duration").txt(ep.durationInSec?.toString() || "60").up();
     item.ele("itunes:explicit").txt("no").up();
@@ -78,6 +121,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
       item.ele("itunes:image").att("href", ep.thumbnail).up();
     }
 
+<<<<<<< HEAD
     // Dynamic enclosure
     item.ele("enclosure", {
       url: enclosureUrl,
@@ -87,12 +131,29 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   });
 
   const xml = feed.end({ prettyPrint: true });
+=======
+    item
+      .ele("enclosure", {
+        url: enclosureUrl,
+        type: ep.mimefield || "video/mp4",
+        length: "627572736"
+      })
+      .up();
+  });
+
+  const xml = feed.end({ prettyPrint: true });
+
+>>>>>>> 882dc2f9452413b3878384d1181bf77f8c995cc4
   res.set("Content-Type", "application/rss+xml");
   res.send(xml);
 });
 
 
 // exports.getpodcastLists = catchAsync(async (req, res) => {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 882dc2f9452413b3878384d1181bf77f8c995cc4
 //    const podcast = await prisma.podcast.findUnique({
 //       where: { uuid: req.params.uuid },
 //       include: { files: true }
