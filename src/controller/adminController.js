@@ -335,6 +335,8 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
       size,
     } = req.body;
 
+    // console.log("req.body", req.body);
+
     const existingEpisode = await prisma.episode.findUnique({
       where: { uuid: id },
     });
@@ -364,14 +366,20 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
       updates.thumbnail = newThumbUrl;
     }
 
-    // --- NEW VIDEO LOGIC ---
-    if (typeof link === "string" && link.trim() !== "" && link !== existingEpisode.link) {
+    const isValidLink =
+      typeof link === "string" &&
+      link.trim() !== "" &&
+      link.trim().toLowerCase() !== "null" &&
+      link.trim().toLowerCase() !== "undefined";
+
+    if (isValidLink && link.trim() !== existingEpisode.link) {
       if (existingEpisode.link) {
         const isVideoDeleted = await deleteFileFromSpaces(existingEpisode.link);
         if (!isVideoDeleted) {
           console.warn("Failed to delete old video file");
         }
       }
+
       updates.link = link.trim();
     }
 
