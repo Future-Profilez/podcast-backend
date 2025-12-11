@@ -3,79 +3,106 @@ const prisma = require("./prismaconfig");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-
 const { convertVideoToAudio } = require("./utils/audioConverter");
 const { uploadFileToSpaces } = require("./utils/FileUploader");
+const logger = require("./utils/Logger");
+
+let isCronRunning = false;
 
 module.exports = () => {
-  // ⏱ Runs every minute
-  cron.schedule("*/10 * * * *", async () => {
+  // Run every 2 minutes
+  cron.schedule("*/1 * * * *", async () => {
+    if (isCronRunning) {
+      // console.log("⏸ Cron already running, skipping...");
+      return;
+    }
+
+    isCronRunning = true;
     console.log("🎧 Audio conversion cron running...");
+    logger.info("🎧 Audio conversion cron running...");
 
     try {
-      // 1️⃣ Fetch episodes pending audio conversion
-      const episodes = await prisma.episode.findMany({
+      // Get one pending episode
+      const episode = await prisma.episode.findFirst({
         where: {
-          audio: null,
+          audioStatus: "PENDING",
           link: { not: null },
           isDeleted: false,
         },
-        take: 2, // ✅ Small batches = stable FFmpeg
         orderBy: { createdAt: "asc" },
       });
 
-      if (!episodes.length) {
-        console.log("✅ No episodes pending audio conversion");
+      if (!episode) {
+        // console.log("✅ No episodes pending");
         return;
       }
 
-      // 2️⃣ Create OS-safe temp directory
+      // Lock the episode
+      await prisma.episode.update({
+        where: { id: episode.id },
+        data: { audioStatus: "PROCESSING" },
+      });
+
+      logger.info(`🔄 Processing episode: ${episode.uuid}`);
+      console.log(`🔄 Processing episode: ${episode.uuid}`);
+
+
+      // Ensure temp folder exists
       const tempDir = path.join(os.tmpdir(), "podcast-audio");
+      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
+      const tempAudioPath = path.join(tempDir, `${episode.uuid}.mp3`);
+
+      // Convert video to mp3
+      await convertVideoToAudio(episode.link, tempAudioPath);
+
+      // Convert file → multer-like object
+      const fileBuffer = fs.readFileSync(tempAudioPath);
+
+      const multerStyleFile = {
+        originalname: `${episode.uuid}.mp3`,
+        buffer: fileBuffer,
+        mimetype: "audio/mpeg",
+      };
+
+      // Upload to Backblaze
+      const audioUrl = await uploadFileToSpaces(multerStyleFile);
+
+      if (!audioUrl) {
+        console.log("❌ Upload failed - marking FAILED");
+        await prisma.episode.update({
+          where: { id: episode.id },
+          data: { audioStatus: "FAILED" },
+        });
+        return;
       }
 
-      for (const episode of episodes) {
-        const tempAudioPath = path.join(
-          tempDir,
-          `${episode.uuid}.mp3`
-        );
+      // Save audio URL
+      await prisma.episode.update({
+        where: { id: episode.id },
+        data: {
+          audio: audioUrl,
+          audioStatus: "COMPLETED",
+        },
+      });
 
-        try {
-          console.log(`🔄 Processing episode: ${episode.uuid}`);
+      logger.info(`✅ Audio completed: ${episode.uuid}`);
+      console.log(`✅ Audio completed: ${episode.uuid}`);
 
-          // 3️⃣ Convert video → audio
-          await convertVideoToAudio(episode.link, tempAudioPath);
+      // Cleanup
+      fs.existsSync(tempAudioPath) && fs.unlinkSync(tempAudioPath);
 
-          // 4️⃣ Upload audio file
-          const audioUrl = await uploadFileToSpaces({
-            path: tempAudioPath,
-            mimeType: "audio/mpeg",
-            folder: "episode-audios",
-          });
-
-          // 5️⃣ Update episode record
-          await prisma.episode.update({
-            where: { id: episode.id },
-            data: { audio: audioUrl },
-          });
-
-          console.log(`✅ Audio created for episode ${episode.uuid}`);
-        } catch (episodeErr) {
-          console.error(
-            `❌ Failed for episode ${episode.uuid}`,
-            episodeErr
-          );
-        } finally {
-          // 6️⃣ Always cleanup temp file
-          if (fs.existsSync(tempAudioPath)) {
-            fs.unlinkSync(tempAudioPath);
-          }
-        }
-      }
     } catch (error) {
-      console.error("❌ Error in audio cron job:", error);
+      logger.error("❌ Cron failed:", error);
+      console.log("❌ Cron failed:", error);
+
+      await prisma.episode.updateMany({
+        where: { audioStatus: "PROCESSING" },
+        data: { audioStatus: "FAILED" },
+      });
+
+    } finally {
+      isCronRunning = false;
     }
   });
 };
