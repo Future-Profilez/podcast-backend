@@ -10,8 +10,8 @@ const logger = require("./utils/Logger");
 let isCronRunning = false;
 
 module.exports = () => {
-  // Run every 2 minutes
-  cron.schedule("*/1 * * * *", async () => {
+  // Run every 5 minutes
+  cron.schedule("*/5 * * * *", async () => {
     if (isCronRunning) {
       // console.log("⏸ Cron already running, skipping...");
       return;
@@ -48,7 +48,8 @@ module.exports = () => {
 
 
       // Ensure temp folder exists
-      const tempDir = path.join(os.tmpdir(), "podcast-audio");
+      // const tempDir = path.join(os.tmpdir(), "podcast-audio");
+      const tempDir = "/var/tmp/podcast-audio";
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
       const tempAudioPath = path.join(tempDir, `${episode.uuid}.mp3`);
