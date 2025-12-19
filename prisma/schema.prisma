@@ -44,10 +44,12 @@ model Episode {
   podcastId          Int
   isDeleted          Boolean              @default(false)
   detail             String?
+  timestamps         String?
   episodeNumber      Int?
   season             Int?
+  topic              String? @default("Financing")
   audio              String?
-  audioStatus String @default("PENDING")
+  audioStatus        String @default("PENDING")
   DistributionStatus DistributionStatus[]
   podcast            Podcast              @relation(fields: [podcastId], references: [id])
 }

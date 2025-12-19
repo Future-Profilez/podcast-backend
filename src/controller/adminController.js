@@ -234,6 +234,7 @@ exports.AddEpisode = catchAsync(async (req, res) => {
       description,
       podcastId,
       detail,
+      timestamps,
       size,
       link,
       mimefield,
@@ -241,10 +242,10 @@ exports.AddEpisode = catchAsync(async (req, res) => {
       durationInSec
     } = req.body;
 
-    if (!title || !description || !podcastId || !detail || !link) {
+    if (!title || !description || !podcastId || !detail || !link || !timestamps) {
       return errorResponse(
         res,
-        "Title, description, podcastId & video link are required",
+        "Title, description, podcastId, timestamps & video link are required",
         401
       );
     }
@@ -266,6 +267,7 @@ exports.AddEpisode = catchAsync(async (req, res) => {
       link, // already uploaded large file URL
       podcastId: Number(podcastId),
       detail,
+      timestamps,
     };
 
     const newEpisode = await prisma.episode.create({ data: episodeData });
@@ -328,6 +330,7 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
       title,
       description,
       detail,
+      timestamps,
       link,
       duration,
       durationInSec,
@@ -350,6 +353,7 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
     if (title) updates.title = title;
     if (description) updates.description = description;
     if (detail) updates.detail = detail;
+    if (timestamps) updates.timestamps = timestamps;
     if (duration !== undefined) updates.duration = Number(duration);
     if (durationInSec !== undefined) updates.durationInSec = Number(durationInSec);
     if (mimefield !== undefined) updates.mimefield = mimefield;

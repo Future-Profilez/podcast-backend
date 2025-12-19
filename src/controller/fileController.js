@@ -107,16 +107,20 @@ exports.HomeEpisodesGet = catchAsync(async (req, res) => {
 
 exports.GetAllFiles = catchAsync(async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, topic } = req.query;
+
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+    const skip = (page - 1) * limit;
 
     const whereClause = {
       isDeleted: false,
-      ...(search && {
+      ...(search && search.trim() !== "" && {
         OR: [
           {
             title: {
               contains: search,
-              mode: "insensitive", // case-insensitive
+              mode: "insensitive",
             },
           },
           {
@@ -129,25 +133,57 @@ exports.GetAllFiles = catchAsync(async (req, res) => {
           },
         ],
       }),
+
+      ...(topic && topic.trim() !== "" && {
+        topic: {
+          equals: topic,
+          mode: "insensitive",
+        },
+      }),
     };
 
-    const data = await prisma.episode.findMany({
-      where: whereClause,
-      include: {
-        podcast: true,
-      },
-      orderBy: {
-        createdAt: "desc",
+    const [episodes, totalCount, topics] = await Promise.all([
+      prisma.episode.findMany({
+        where: whereClause,
+        include: {
+          podcast: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip,
+        take: limit,
+      }),
+
+      prisma.episode.count({
+        where: whereClause,
+      }),
+
+      prisma.episode.findMany({
+        distinct: ["topic"],
+        select: { topic: true },
+        where: {
+          topic: { not: null },
+        },
+      }),
+    ]);
+
+    const distinctTopics = topics.map(t => t.topic);
+
+    return successResponse(res, "Episode retrieved successfully", 200, {
+      episodes: episodes || [],
+      topics: distinctTopics,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNextPage: page * limit < totalCount,
+        hasPrevPage: page > 1,
       },
     });
-
-    if (!data || data.length === 0) {
-      return errorResponse(res, "Files not found", 404);
-    }
-
-    return successResponse(res, "Files retrieved successfully", 200, data);
   } catch (error) {
-    console.error("File retrieval error:", error);
+    console.error("Episode retrieval error:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
 });
