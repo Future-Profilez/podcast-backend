@@ -336,9 +336,16 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
       durationInSec,
       mimefield,
       size,
+      spotifyLink,
+      appleLink,
     } = req.body;
 
     // console.log("req.body", req.body);
+    const isValidString = (val) =>
+      typeof val === "string" &&
+      val.trim() !== "" &&
+      val.trim().toLowerCase() !== "null" &&
+      val.trim().toLowerCase() !== "undefined";
 
     const existingEpisode = await prisma.episode.findUnique({
       where: { uuid: id },
@@ -358,6 +365,13 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
     if (durationInSec !== undefined) updates.durationInSec = Number(durationInSec);
     if (mimefield !== undefined) updates.mimefield = mimefield;
     if (size !== undefined) updates.size = Number(size);
+    
+    if (isValidString(spotifyLink) && spotifyLink.trim() !== existingEpisode.spotifyLink) {
+      updates.spotifyLink = spotifyLink.trim();
+    }
+    if (isValidString(appleLink) && appleLink.trim() !== existingEpisode.appleLink) {
+      updates.appleLink = appleLink.trim();
+    }
 
     // Handle thumbnail update only if new file comes
     if (req.files?.thumbnail?.[0]) {

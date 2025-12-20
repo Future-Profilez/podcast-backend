@@ -44,6 +44,8 @@ model Episode {
   podcastId          Int
   isDeleted          Boolean              @default(false)
   detail             String?
+  spotifyLink        String?
+  appleLink          String?
   timestamps         String?
   episodeNumber      Int?
   season             Int?
