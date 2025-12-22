@@ -232,20 +232,22 @@ exports.AddEpisode = catchAsync(async (req, res) => {
     const {
       title,
       description,
+      topic,
       podcastId,
       detail,
       timestamps,
       size,
       link,
+      audio,
       mimefield,
       duration,
       durationInSec
     } = req.body;
 
-    if (!title || !description || !podcastId || !detail || !link || !timestamps) {
+    if (!title || !description || !podcastId || !detail || !link || !timestamps || !topic || !audio) {
       return errorResponse(
         res,
-        "Title, description, podcastId, timestamps & video link are required",
+        "Title, description, topic, podcastId, timestamps, audio & video link are required",
         401
       );
     }
@@ -259,12 +261,14 @@ exports.AddEpisode = catchAsync(async (req, res) => {
       uuid: uuidv4(),
       title,
       description,
+      topic,
       duration: duration ? Number(duration) : 0,
       durationInSec: durationInSec ? Number(durationInSec) : 0,
       mimefield: mimefield || "",
       size: size ? Number(size) : null,
       thumbnail,
-      link, // already uploaded large file URL
+      link,
+      audio,
       podcastId: Number(podcastId),
       detail,
       timestamps,
@@ -329,9 +333,11 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
     const {
       title,
       description,
+      topic,
       detail,
       timestamps,
       link,
+      audio,
       duration,
       durationInSec,
       mimefield,
@@ -359,6 +365,7 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
 
     if (title) updates.title = title;
     if (description) updates.description = description;
+    if (topic) updates.topic = topic;
     if (detail) updates.detail = detail;
     if (timestamps) updates.timestamps = timestamps;
     if (duration !== undefined) updates.duration = Number(duration);
@@ -399,6 +406,23 @@ exports.UpdateEpisode = catchAsync(async (req, res) => {
       }
 
       updates.link = link.trim();
+    }
+
+    const isValidAudio =
+      typeof audio === "string" &&
+      audio.trim() !== "" &&
+      audio.trim().toLowerCase() !== "null" &&
+      audio.trim().toLowerCase() !== "undefined";
+
+    if (isValidAudio && audio.trim() !== existingEpisode.audio) {
+      if (existingEpisode.audio) {
+        const isAudioDeleted = await deleteFileFromSpaces(existingEpisode.audio);
+        if (!isAudioDeleted) {
+          console.warn("Failed to delete old audio file");
+        }
+      }
+
+      updates.audio = audio.trim();
     }
 
     const updatedEpisode = await prisma.episode.update({

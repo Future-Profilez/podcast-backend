@@ -128,6 +128,9 @@ exports.Dashboard = catchAsync(async (req, res) => {
       where: {
         isDeleted: false,
       },
+      include: {
+        podcast: true,
+      },
       orderBy: {
         createdAt: "desc",
       },
