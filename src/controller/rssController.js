@@ -2,6 +2,18 @@ const { errorResponse } = require("../utils/ErrorHandling");
 const catchAsync = require("../utils/catchAsync");
 const prisma = require("../prismaconfig");
 const { create } = require("xmlbuilder2");
+
+const formatTimestampsForSpotify = (timestamps) => {
+  if (!timestamps) return "";
+
+  return timestamps
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => `<p>${line}</p>`)
+    .join("");
+};
+
 exports.getpodcastLists = catchAsync(async (req, res) => {
   const podcastId = req.params.podcastId;
   const type = req.params.type || 'video'; // 'video' | 'audio'
@@ -55,10 +67,12 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   // Generate episodes based on type
   episodes.forEach((ep, index) => {
     const item = feed.ele("item");
-     const description =`<![CDATA[
-   <p>${ep.description || ""}</p>
-   <p>${ep.timestamps || ""}</p>
-  ]]>`;
+    const descriptionHTML = `
+      ${ep.description ? `<p><strong>Description</strong></p><p>${ep.description}</p>` : ""}
+      ${ep.details ? `<p><strong>Details</strong></p><p>${ep.details}</p>` : ""}
+      ${ep.timestamps ? `<p><strong>Timestamps</strong></p>` : ""}
+      ${ep.timestamps ? formatTimestampsForSpotify(ep.timestamps) : ""}
+    `;
 
     // Dynamic enclosure based on type
     let enclosureUrl, mimeType, fileSize = "627572736";
@@ -73,7 +87,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
 
     item.ele("title").txt(ep.title).up();
     // item.ele("description").txt(description || ep.description || "").up();
-    item.ele("description").dat(`<p>${ep.description || ""}</p>${ep.timestamps || ""}`).up();
+    item.ele("description").dat(descriptionHTML).up();
     item.ele("link").txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
     item.ele("guid", { isPermaLink: "false" })
       .txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
