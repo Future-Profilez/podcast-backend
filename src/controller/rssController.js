@@ -31,6 +31,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     })
     .ele("channel");
 
+  
   // Channel metadata
   feed.ele("title").txt(podcast.name).up();
   feed.ele("link").txt(`https://thepropertyportfolio.com.au/episode/${podcast?.uuid}`).up();
@@ -54,7 +55,11 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   // Generate episodes based on type
   episodes.forEach((ep, index) => {
     const item = feed.ele("item");
-    
+     const description =`<![CDATA[
+   <p>${ep.description || ""}</p>
+   <p>${ep.timestamps || ""}</p>
+  ]]>`;
+
     // Dynamic enclosure based on type
     let enclosureUrl, mimeType, fileSize = "627572736";
     
@@ -67,7 +72,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     }
 
     item.ele("title").txt(ep.title).up();
-    item.ele("description").txt(ep.description || "").up();
+    item.ele("description").txt(description || ep.description || "").up();
     item.ele("link").txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
     item.ele("guid", { isPermaLink: "false" })
       .txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
