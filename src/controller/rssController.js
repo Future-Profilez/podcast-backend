@@ -84,7 +84,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     item.ele("itunes:episodeType").txt("full").up();
 
     if (ep.thumbnail) {
-      item.ele("itunes:image").att("href", ep.thumbnail).up();
+      item.ele("itunes:image").att("href", ep.thumbnail).up(); 
     }
 
     // Dynamic enclosure
