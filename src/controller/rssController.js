@@ -6,13 +6,17 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
   const podcastId = req.params.podcastId;
   const type = req.params.type || 'video'; // 'video' | 'audio'
   const podcast = await prisma.podcast.findUnique({
-    where: { uuid: podcastId },
+    where: { uuid: podcastId,
+      isDeleted: false,},
   });
   if (!podcast) {
-    return errorResponse(res, "Podcast not found", 404);
+    return errorResponse(res, "Podcast deleted or not available", 404);
   }
   const episodes = await prisma.episode.findMany({
-    where: { podcastId: podcast?.id },
+    where: { 
+      podcastId: podcast?.id,
+      isDeleted: false,
+     },
     include: { podcast: true },
     orderBy: { createdAt: "desc" }
   });
@@ -55,7 +59,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     let enclosureUrl, mimeType, fileSize = "627572736";
     
     if (type === 'audio') {
-      enclosureUrl = ep.audioLink;
+      enclosureUrl = ep.audio;
       mimeType = "audio/mpeg"; // Spotify/Apple compliant
     } else { // video
       enclosureUrl = ep.link;
