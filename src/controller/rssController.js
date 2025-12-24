@@ -72,7 +72,8 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     }
 
     item.ele("title").txt(ep.title).up();
-    item.ele("description").txt(description || ep.description || "").up();
+    // item.ele("description").txt(description || ep.description || "").up();
+    item.ele("description").dat(`<p>${ep.description || ""}</p>${ep.timestamps || ""}`).up();
     item.ele("link").txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
     item.ele("guid", { isPermaLink: "false" })
       .txt(`https://thepropertyportfolio.com.au/podcast/${ep.uuid}`).up();
