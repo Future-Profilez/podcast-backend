@@ -73,6 +73,7 @@ model Guide {
 model subscriber {
   id    Int    @id @default(autoincrement())
   email String @unique
+  createdAt DateTime @default(now())
 }
 
 model contact {
@@ -81,6 +82,7 @@ model contact {
   name    String
   message String
   subject String?
+  createdAt DateTime @default(now())
 }
 
 model DistributionStatus {

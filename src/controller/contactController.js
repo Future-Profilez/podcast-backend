@@ -30,6 +30,9 @@ exports.Getcontact = catchAsync(async (req, res) => {
       prisma.contact.findMany({
         skip,
         take: limit,
+        orderBy: {
+          createdAt: 'desc', // 👈 newest first
+        },
       }),
       prisma.contact.count(),
     ]);
