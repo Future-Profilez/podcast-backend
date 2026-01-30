@@ -49,6 +49,9 @@ exports.AddPodcast = catchAsync(async (req, res) => {
 
     return successResponse(res, "Podcast created successfully!", 201, newPodcast);
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return errorResponse(res, "A podcast with this name already exists", 409);
+    }
     console.error("Error in AddPodcast:", error);
     return errorResponse(res, error.message || "Internal Server Error", 500);
   }
