@@ -62,7 +62,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     "The Property Portfolio Podcast explores property investing, finance, and wealth-building strategies across Australia using data-backed insights.";
 
   feed.ele("title").txt(podcast.name).up();
-  feed.ele("link").txt("https://thepropertyportfolio.com.au/podcast").up();
+  feed.ele("link").txt("https://thepropertyportfolio.com.au/episode").up();
   feed.ele("description").txt(podcastDescription).up();
   feed.ele("language").txt("en-au").up();
   feed.ele("itunes:author").txt(podcast.author || "The Property Portfolio Podcast").up();
