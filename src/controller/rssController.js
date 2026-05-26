@@ -32,6 +32,7 @@ const htmlToPlainText = (value) => {
 
 exports.getpodcastLists = catchAsync(async (req, res) => {
   const podcastId = req.params.podcastId;
+  const SUMMARY_LIMIT = 150;
 
   // ✅ Apple & Spotify dono ke liye DEFAULT audio rakho
   const type = req.params.type === "video" ? "video" : "audio";
@@ -128,23 +129,20 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
       /\btimestamp\b/i.test(detailText) ||
       (timestampsText && detailText.includes(timestampsText));
 
+    const shortSummaryRaw = (ep.description || "").toString().trim();
+    const shortSummary =
+      shortSummaryRaw.length > SUMMARY_LIMIT
+        ? shortSummaryRaw.slice(0, SUMMARY_LIMIT).trim()
+        : shortSummaryRaw;
+
     const contentEncoded = [
-      ep.description
-        ? `<p><strong>Description</strong></p><p>${escapeHtml(ep.description)}</p>`
-        : "",
       detailHtml ? `<p><strong>Details</strong></p>${detailHtml}` : "",
       timestampsHtml && !detailHasTimestamps ? `<p><strong>Timestamps</strong></p>${timestampsHtml}` : "",
     ]
       .filter(Boolean)
       .join("");
 
-    const plainDescriptionParts = [];
-    if (ep.description) plainDescriptionParts.push(ep.description.trim());
-    if (detailText) plainDescriptionParts.push(detailText);
-    if (timestampsText && !detailHasTimestamps) {
-      plainDescriptionParts.push(`TIMESTAMPS\n${timestampsText}`);
-    }
-    const plainDescription = plainDescriptionParts.filter(Boolean).join("\n---\n");
+    const plainDescription = shortSummary || ep.title;
 
     // ===============================
     // ✅ ENCLOSURE (TYPE BASED)
@@ -165,7 +163,7 @@ exports.getpodcastLists = catchAsync(async (req, res) => {
     item.ele("title").txt(ep.title).up();
     item.ele("description").txt(plainDescription).up();
     item.ele("itunes:summary").txt(plainDescription).up();
-    item.ele("itunes:subtitle").txt(ep.description || ep.title).up();
+    item.ele("itunes:subtitle").txt(shortSummary || ep.title).up();
     item.ele("googleplay:description").txt(plainDescription).up();
     if (contentEncoded) {
       item.ele("content:encoded").dat(contentEncoded).up();
